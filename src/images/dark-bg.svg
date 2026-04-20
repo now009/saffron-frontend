@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" stop-color="#1a1a2e"/>
+      <stop offset="50%" stop-color="#0f0f1a"/>
+      <stop offset="100%" stop-color="#000005"/>
+    </radialGradient>
+    <radialGradient id="glow1" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#f5a623" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#f5a623" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glow2" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#7b2d8b" stop-opacity="0.12"/>
+      <stop offset="100%" stop-color="#7b2d8b" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Base dark background -->
+  <rect width="1920" height="1080" fill="url(#bg)"/>
+
+  <!-- Ambient glow center (saffron) -->
+  <ellipse cx="960" cy="540" rx="600" ry="400" fill="url(#glow1)"/>
+  <!-- Ambient glow top-left (purple) -->
+  <ellipse cx="200" cy="150" rx="400" ry="300" fill="url(#glow2)"/>
+  <!-- Ambient glow bottom-right (purple) -->
+  <ellipse cx="1750" cy="950" rx="400" ry="300" fill="url(#glow2)"/>
+
+  <!-- Stars -->
+  <circle cx="120" cy="80" r="1.5" fill="white" opacity="0.8"/>
+  <circle cx="345" cy="210" r="1" fill="white" opacity="0.6"/>
+  <circle cx="560" cy="55" r="2" fill="white" opacity="0.7"/>
+  <circle cx="780" cy="140" r="1.2" fill="white" opacity="0.5"/>
+  <circle cx="1020" cy="30" r="1.8" fill="white" opacity="0.8"/>
+  <circle cx="1250" cy="100" r="1" fill="white" opacity="0.6"/>
+  <circle cx="1450" cy="60" r="1.5" fill="white" opacity="0.7"/>
+  <circle cx="1700" cy="180" r="2" fill="white" opacity="0.5"/>
+  <circle cx="1850" cy="90" r="1.2" fill="white" opacity="0.8"/>
+  <circle cx="90" cy="300" r="1" fill="white" opacity="0.6"/>
+  <circle cx="230" cy="450" r="1.8" fill="white" opacity="0.4"/>
+  <circle cx="430" cy="380" r="1.2" fill="white" opacity="0.7"/>
+  <circle cx="670" cy="290" r="1" fill="white" opacity="0.5"/>
+  <circle cx="890" cy="200" r="1.5" fill="white" opacity="0.6"/>
+  <circle cx="1100" cy="250" r="1" fill="white" opacity="0.8"/>
+  <circle cx="1350" cy="180" r="2" fill="white" opacity="0.4"/>
+  <circle cx="1580" cy="310" r="1.2" fill="white" opacity="0.7"/>
+  <circle cx="1780" cy="400" r="1" fill="white" opacity="0.5"/>
+  <circle cx="60" cy="600" r="1.5" fill="white" opacity="0.6"/>
+  <circle cx="310" cy="700" r="1" fill="white" opacity="0.8"/>
+  <circle cx="1650" cy="650" r="1.8" fill="white" opacity="0.4"/>
+  <circle cx="1870" cy="750" r="1" fill="white" opacity="0.7"/>
+  <circle cx="150" cy="900" r="2" fill="white" opacity="0.5"/>
+  <circle cx="400" cy="980" r="1.2" fill="white" opacity="0.6"/>
+  <circle cx="700" cy="1020" r="1" fill="white" opacity="0.8"/>
+  <circle cx="1200" cy="950" r="1.5" fill="white" opacity="0.4"/>
+  <circle cx="1500" cy="1000" r="1" fill="white" opacity="0.7"/>
+  <circle cx="1800" cy="920" r="1.8" fill="white" opacity="0.5"/>
+
+  <!-- Saffron accent lines (subtle) -->
+  <line x1="0" y1="1080" x2="960" y2="540" stroke="#f5a623" stroke-width="0.5" opacity="0.08"/>
+  <line x1="1920" y1="0" x2="960" y2="540" stroke="#f5a623" stroke-width="0.5" opacity="0.08"/>
+</svg>
