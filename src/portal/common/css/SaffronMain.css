@@ -1,0 +1,93 @@
+.main-content {
+  flex: 1;
+  overflow-y: auto;
+  background: #0d0d1a;
+  padding: 28px;
+}
+
+.content-breadcrumb {
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.4);
+  margin-bottom: 20px;
+  letter-spacing: 0.5px;
+}
+
+.content-body {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(245, 166, 35, 0.1);
+  border-radius: 12px;
+  padding: 28px;
+  min-height: 300px;
+}
+
+.content-title {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #f5a623;
+  margin-bottom: 16px;
+}
+
+.content-placeholder {
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.9rem;
+}
+
+/* 대시보드 */
+.dashboard-area {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.dashboard-welcome {
+  padding: 32px;
+  background: rgba(245, 166, 35, 0.06);
+  border: 1px solid rgba(245, 166, 35, 0.15);
+  border-radius: 14px;
+}
+
+.dashboard-welcome h2 {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #f5a623;
+  margin-bottom: 8px;
+}
+
+.dashboard-welcome p {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.9rem;
+}
+
+.dashboard-cards {
+  display: flex;
+  gap: 20px;
+}
+
+.dashboard-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 32px 20px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(245, 166, 35, 0.1);
+  border-radius: 14px;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.dashboard-card:hover {
+  background: rgba(245, 166, 35, 0.08);
+  border-color: rgba(245, 166, 35, 0.3);
+}
+
+.card-icon {
+  font-size: 2rem;
+}
+
+.card-label {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 500;
+}
