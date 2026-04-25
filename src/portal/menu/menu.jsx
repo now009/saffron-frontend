@@ -263,7 +263,7 @@ function Menu() {
   const handleSave = async (form) => {
     const isEdit = modal.mode === 'edit'
     try {
-      const url = isEdit ? apiUri.menus.update(form.menuId) : apiUri.menus.create()
+      const url = isEdit ? apiUri.menus.update() : apiUri.menus.create()
       const res = await fetch(url, {
         method: 'POST',
         headers: { ...serverConfig.token.authHeader(), 'Content-Type': 'application/json' },
