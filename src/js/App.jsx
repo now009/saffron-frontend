@@ -2,8 +2,8 @@ import { useState } from 'react'
 import '../css/App.css'
 import saffronLogo from '../images/saffron-logo.svg'
 import darkBg from '../images/dark-bg.svg'
-import authConfig from '../config/auth.js'
-import token from '../config/token.js'
+import serverConfig from '../config/serverConfig.js'
+import apiUri from '../api/apiUri.js'
 
 function App() {
   const [userId, setUserId] = useState('admin')
@@ -23,8 +23,8 @@ function App() {
       params.append('userId', userId)
       params.append('password', password)
 
-      const res = await fetch(authConfig.loginUrl, {
-        method: authConfig.method,
+      const res = await fetch(apiUri.auth.login(), {
+        method: serverConfig.auth.method,
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
         },
@@ -33,8 +33,8 @@ function App() {
 
       if (res.ok) {
         const data = await res.json()
-        token.save(data.access_token)
-        window.location.href = authConfig.successUrl
+        serverConfig.token.save(data.access_token)
+        window.location.href = serverConfig.auth.successUrl
       } else {
         const data = await res.json().catch(() => ({}))
         setError(data.error || `로그인 실패 (${res.status})`)

@@ -1,7 +1,7 @@
 import { useNavigate, useLocation } from 'react-router-dom'
 import '../common/css/SaffronTop.css'
 import portalLogo from '../images/portal-logo.svg'
-import token from '../../config/token.js'
+import serverConfig from '../../config/serverConfig.js'
 import { MENUS, MENU_CONFIG, PATH_TO_MENU } from './menuConfig.js'
 
 function SaffronTop() {
@@ -12,7 +12,7 @@ function SaffronTop() {
   const activeMenu = PATH_TO_MENU[pathKey] || ''
 
   const handleLogout = () => {
-    token.remove()
+    serverConfig.token.remove()
     window.location.href = '/'
   }
 

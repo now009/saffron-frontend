@@ -4,13 +4,14 @@
   justify-content: space-between;
   height: 56px;
   padding: 0 24px;
-  background: #0f0f1a;
-  border-bottom: 1px solid rgba(245, 166, 35, 0.25);
+  background: #ffffff;
+  border-bottom: 1px solid #e2e6ea;
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   z-index: 100;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
 }
 
 .top-left {
@@ -34,23 +35,23 @@
   background: none;
   border: none;
   border-radius: 8px;
-  color: rgba(255, 255, 255, 0.7);
+  color: #4b5563;
   font-size: 0.9rem;
   font-weight: 500;
   cursor: pointer;
   transition: background 0.15s, color 0.15s;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
 }
 
 .nav-item:hover {
-  background: rgba(245, 166, 35, 0.1);
-  color: #f5a623;
+  background: #eef2ff;
+  color: #4f7ef8;
 }
 
 .nav-item.active {
-  background: rgba(245, 166, 35, 0.15);
-  color: #f5a623;
-  border-bottom: 2px solid #f5a623;
+  background: #eef2ff;
+  color: #4f7ef8;
+  font-weight: 600;
 }
 
 .top-right {
@@ -65,7 +66,7 @@
   gap: 8px;
   padding: 6px 14px;
   border-radius: 20px;
-  color: rgba(255, 255, 255, 0.7);
+  color: #4b5563;
 }
 
 .logout-btn {
@@ -75,9 +76,9 @@
   width: 34px;
   height: 34px;
   background: none;
-  border: 1px solid rgba(245, 166, 35, 0.25);
+  border: 1px solid #e2e6ea;
   border-radius: 8px;
-  color: rgba(255, 255, 255, 0.6);
+  color: #6b7280;
   cursor: pointer;
   transition: background 0.15s, color 0.15s, border-color 0.15s;
 }
@@ -88,19 +89,20 @@
 }
 
 .logout-btn:hover {
-  background: rgba(245, 166, 35, 0.12);
-  border-color: #f5a623;
-  color: #f5a623;
+  background: #eef2ff;
+  border-color: #4f7ef8;
+  color: #4f7ef8;
 }
 
 .user-icon {
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: rgba(245, 166, 35, 0.2);
+  background: #eef2ff;
   display: flex;
   align-items: center;
   justify-content: center;
+  color: #4f7ef8;
 }
 
 .user-icon svg {
@@ -111,4 +113,5 @@
 .user-label {
   font-size: 0.85rem;
   font-weight: 500;
+  color: #4b5563;
 }

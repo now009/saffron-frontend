@@ -1,34 +1,35 @@
 .main-content {
   flex: 1;
   overflow-y: auto;
-  background: #0d0d1a;
+  background: #f0f2f7;
   padding: 28px;
 }
 
 .content-breadcrumb {
   font-size: 0.78rem;
-  color: rgba(255, 255, 255, 0.4);
+  color: #9ca3af;
   margin-bottom: 20px;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.4px;
 }
 
 .content-body {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(245, 166, 35, 0.1);
+  background: #ffffff;
+  border: 1px solid #e2e6ea;
   border-radius: 12px;
   padding: 28px;
   min-height: 300px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
 }
 
 .content-title {
-  font-size: 1.3rem;
-  font-weight: 600;
-  color: #f5a623;
-  margin-bottom: 16px;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #1e2530;
+  margin-bottom: 20px;
 }
 
 .content-placeholder {
-  color: rgba(255, 255, 255, 0.4);
+  color: #9ca3af;
   font-size: 0.9rem;
 }
 
@@ -36,31 +37,31 @@
 .dashboard-area {
   display: flex;
   flex-direction: column;
-  gap: 32px;
+  gap: 28px;
 }
 
 .dashboard-welcome {
-  padding: 32px;
-  background: rgba(245, 166, 35, 0.06);
-  border: 1px solid rgba(245, 166, 35, 0.15);
-  border-radius: 14px;
+  padding: 28px;
+  background: #eef2ff;
+  border: 1px solid #d4e0ff;
+  border-radius: 12px;
 }
 
 .dashboard-welcome h2 {
-  font-size: 1.4rem;
-  font-weight: 600;
-  color: #f5a623;
-  margin-bottom: 8px;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #1e2530;
+  margin-bottom: 6px;
 }
 
 .dashboard-welcome p {
-  color: rgba(255, 255, 255, 0.5);
+  color: #6b7280;
   font-size: 0.9rem;
 }
 
 .dashboard-cards {
   display: flex;
-  gap: 20px;
+  gap: 16px;
 }
 
 .dashboard-card {
@@ -68,26 +69,28 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
-  padding: 32px 20px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(245, 166, 35, 0.1);
-  border-radius: 14px;
+  gap: 10px;
+  padding: 28px 20px;
+  background: #ffffff;
+  border: 1px solid #e2e6ea;
+  border-radius: 12px;
   cursor: pointer;
-  transition: background 0.2s, border-color 0.2s;
+  transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
 .dashboard-card:hover {
-  background: rgba(245, 166, 35, 0.08);
-  border-color: rgba(245, 166, 35, 0.3);
+  background: #f5f7ff;
+  border-color: #a5b4fc;
+  box-shadow: 0 4px 12px rgba(79, 126, 248, 0.1);
 }
 
 .card-icon {
-  font-size: 2rem;
+  font-size: 1.8rem;
 }
 
 .card-label {
-  font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.875rem;
+  color: #4b5563;
   font-weight: 500;
 }
