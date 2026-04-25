@@ -22,11 +22,13 @@ const apiUri = {
     delete: (id) => `${portal}/portal/dept/${id}`,
   },
   menus: {
-    list:   ()   => `${portal}/portal/menus/list`,
-    detail: (id) => `${portal}/portal/menus/${id}`,
-    create: ()   => `${portal}/portal/menus`,
-    update: (id) => `${portal}/portal/menus/${id}`,
-    delete: (id) => `${portal}/portal/menus/${id}`,
+    list:        ()   => `${portal}/portal/menus/list`,
+    detail:      (id) => `${portal}/portal/menus/${id}`,
+    create:      ()   => `${portal}/portal/menus`,
+    update:      (id) => `${portal}/portal/menus/${id}`,
+    delete:      (id) => `${portal}/portal/menus/delete/${id}`,
+    nextId:      ()   => `${portal}/portal/menus/next-id`,
+    parentMenus: ()   => `${portal}/portal/menus/parent-menus`,
   },
   program: {
     list:   ()   => `${portal}/portal/program/list`,

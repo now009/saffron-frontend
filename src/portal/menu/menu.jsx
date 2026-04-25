@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import apiUri from '../../api/apiUri'
 import serverConfig from '../../config/serverConfig'
 import '../common/css/grid.css'
@@ -12,11 +12,12 @@ const SEARCH_FIELDS = [
 
 const COLUMNS = [
   { key: 'menuId',       label: '메뉴 ID',      width: '120px' },
-  { key: 'menuNameTree', label: '메뉴명',        width: '240px' },
+  { key: 'menuNameTree', label: '메뉴명',        width: '220px' },
   { key: 'programId',    label: '프로그램 ID',   width: '120px' },
-  { key: 'programName',  label: '프로그램명',    width: '160px' },
-  { key: 'programUrl',   label: '프로그램 URI',  width: '220px' },
+  { key: 'programName',  label: '프로그램명',    width: '150px' },
+  { key: 'programUrl',   label: '프로그램 URI',  width: '200px' },
   { key: 'useYn',        label: '메뉴사용여부',  width: '100px' },
+  { key: '__action',     label: '',             width: '48px'  },
 ]
 
 function TreeCell({ name, depth }) {
@@ -33,9 +34,137 @@ function TreeCell({ name, depth }) {
 
 function CellValue({ colKey, value }) {
   if (colKey === 'useYn') {
-    return <span className={`grid-badge ${value === 'Y' ? 'on' : 'off'}`}>{value === 'Y' ? '사용' : '미사용'}</span>
+    return <span className={`grid-badge ${value === 'Y' ? 'on' : 'off'}`}>{value ?? '-'}</span>
   }
   return <>{value ?? '-'}</>
+}
+
+function ActionMenu({ row, onEdit, onDelete }) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef(null)
+
+  useEffect(() => {
+    if (!open) return
+    const close = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false) }
+    document.addEventListener('mousedown', close)
+    return () => document.removeEventListener('mousedown', close)
+  }, [open])
+
+  return (
+    <div className="action-menu" ref={ref}>
+      <button className="action-btn" onClick={() => setOpen((v) => !v)}>
+        <svg viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
+      </button>
+      {open && (
+        <div className="action-dropdown">
+          <button className="action-item edit" onClick={() => { onEdit(row); setOpen(false) }}>수정</button>
+          <button className="action-item delete" onClick={() => { onDelete(row); setOpen(false) }}>삭제</button>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function MenuModal({ mode, form: initialForm, onClose, onSave }) {
+  const [form, setForm]           = useState(initialForm)
+  const [parentMenus, setParentMenus] = useState([])
+  const isEdit = mode === 'edit'
+
+  useEffect(() => {
+    if (isEdit) return
+    fetch(apiUri.menus.nextId(), { headers: serverConfig.token.authHeader() })
+      .then((r) => r.json())
+      .then((data) => setForm((prev) => ({ ...prev, menuId: data.menuId ?? data.nextId ?? String(data) })))
+      .catch(() => {})
+    fetch(apiUri.menus.parentMenus(), { headers: serverConfig.token.authHeader() })
+      .then((r) => r.json())
+      .then((data) => setParentMenus(Array.isArray(data) ? data : data.list ?? []))
+      .catch(() => {})
+  }, [isEdit])
+
+  const set = (key, val) => {
+    setForm((prev) => {
+      const next = { ...prev, [key]: val }
+      if (key === 'parentMenuId') next.menuLevel = val ? (prev.menuLevel || 1) : 0
+      return next
+    })
+  }
+
+  const handleSubmit = () => {
+    if (!form.menuId)    { alert('메뉴 ID를 입력하세요');     return }
+    if (!form.menuName)  { alert('메뉴명을 입력하세요');      return }
+    if (!form.programId) { alert('프로그램 ID를 입력하세요'); return }
+    onSave(form)
+  }
+
+  return (
+    <div className="modal-overlay" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose() }}>
+      <div className="modal-box">
+        <div className="modal-header">
+          <span className="modal-title">{isEdit ? '메뉴 수정' : '메뉴 생성'}</span>
+          <button className="modal-close" onClick={onClose}>✕</button>
+        </div>
+        <div className="modal-body">
+          <div className="modal-field">
+            <label>메뉴 ID</label>
+            <input value={form.menuId} readOnly placeholder="조회 중..." />
+          </div>
+          {!isEdit && (
+            <div className="modal-field">
+              <label>상위 메뉴 ID</label>
+              <select value={form.parentMenuId} onChange={(e) => set('parentMenuId', e.target.value)}>
+                <option value="">없음 (최상위)</option>
+                {parentMenus.map((m) => (
+                  <option key={m.menuId} value={m.menuId}>
+                    {m.menuNameTree ?? m.menuName} ({m.menuId})
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+          <div className="modal-field">
+            <label>메뉴명</label>
+            <input value={form.menuName} onChange={(e) => set('menuName', e.target.value)} placeholder="메뉴명" />
+          </div>
+          {!isEdit && (
+            <div className="modal-field-row">
+              <div className="modal-field">
+                <label>메뉴 레벨</label>
+                <select value={form.menuLevel} onChange={(e) => set('menuLevel', Number(e.target.value))}>
+                  <option value={0}>0</option>
+                  <option value={1}>1</option>
+                  <option value={2}>2</option>
+                </select>
+              </div>
+              <div className="modal-field">
+                <label>정렬 순서</label>
+                <select value={form.sortOrder} onChange={(e) => set('sortOrder', Number(e.target.value))}>
+                  {Array.from({ length: 21 }, (_, i) => (
+                    <option key={i} value={i}>{i}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          )}
+          <div className="modal-field">
+            <label>프로그램 ID</label>
+            <input value={form.programId} onChange={(e) => set('programId', e.target.value)} placeholder="프로그램 ID" />
+          </div>
+          <div className="modal-field">
+            <label>사용 여부</label>
+            <select value={form.useYn} onChange={(e) => set('useYn', e.target.value)}>
+              <option value="Y">Y</option>
+              <option value="N">N</option>
+            </select>
+          </div>
+        </div>
+        <div className="modal-footer">
+          <button className="modal-btn-cancel" onClick={onClose}>취소</button>
+          <button className="modal-btn-save" onClick={handleSubmit}>저장</button>
+        </div>
+      </div>
+    </div>
+  )
 }
 
 function SearchIcon() {
@@ -77,7 +206,7 @@ function Pagination({ current, total, onChange }) {
 function Menu() {
   const [rows, setRows]       = useState([])
   const [loading, setLoading] = useState(true)
-  const [error, setError]     = useState(null)
+  const [modal, setModal]     = useState(null)
 
   const [searchField, setSearchField] = useState(SEARCH_FIELDS[0].value)
   const [searchInput, setSearchInput] = useState('')
@@ -86,7 +215,6 @@ function Menu() {
 
   const fetchData = async (field = '', keyword = '') => {
     setLoading(true)
-    setError(null)
     try {
       const queryParam = SEARCH_FIELDS.find((f) => f.value === field)?.queryParam ?? field
       const params = new URLSearchParams()
@@ -105,7 +233,7 @@ function Menu() {
       const data = await res.json()
       setRows(Array.isArray(data) ? data : data.list ?? data.content ?? [])
     } catch (err) {
-      setError(err.message)
+      alert(err.message)
     } finally {
       setLoading(false)
     }
@@ -117,6 +245,63 @@ function Menu() {
     setCurrentPage(1)
     fetchData(searchField, searchInput)
   }
+
+  const handleEdit = (row) => {
+    setModal({
+      mode: 'edit',
+      form: { menuId: row.menuId ?? '', menuName: row.menuName ?? '', programId: row.programId ?? '', useYn: row.useYn ?? 'Y' },
+    })
+  }
+
+  const handleAdd = () => {
+    setModal({
+      mode: 'add',
+      form: { menuId: '', parentMenuId: '', menuName: '', menuLevel: 0, programId: '', sortOrder: 0, useYn: 'Y' },
+    })
+  }
+
+  const handleSave = async (form) => {
+    const isEdit = modal.mode === 'edit'
+    try {
+      const url = isEdit ? apiUri.menus.update(form.menuId) : apiUri.menus.create()
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { ...serverConfig.token.authHeader(), 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      })
+      const data = await res.json()
+      if (data.messageCode === 'fail') {
+        alert(data.message)
+        return
+      }
+      setModal(null)
+      fetchData(searchField, searchInput)
+    } catch (err) {
+      alert(`저장 실패 (${err.message})`)
+    }
+  }
+
+  const handleDelete = async (row) => {
+    if (!window.confirm('삭제하시겠습니까?')) return
+    try {
+      const res = await fetch(apiUri.menus.delete(row.menuId), {
+        method: 'POST',
+        headers: { ...serverConfig.token.authHeader(), 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+      })
+      const data = await res.json()
+      if (data.messageCode === 'fail') {
+        alert(data.message)
+        return
+      }
+      fetchData(searchField, searchInput)
+    } catch (err) {
+      alert(`삭제 실패 (${err.message})`)
+    }
+  }
+
+  const hasChildIds = new Set(rows.map((r) => r.parentMenuId).filter(Boolean))
+  const showAction  = (row) => !hasChildIds.has(row.menuId)
 
   const totalPages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE))
   const pageRows   = rows.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE)
@@ -146,6 +331,7 @@ function Menu() {
                     <SearchIcon />
                   </button>
                 </div>
+                <button className="grid-add-btn" onClick={handleAdd}>+ Add</button>
               </div>
             </div>
 
@@ -158,14 +344,14 @@ function Menu() {
                 </colgroup>
                 <thead>
                   <tr>
-                    {COLUMNS.map((col) => <th key={col.key}>{col.label}</th>)}
+                    {COLUMNS.map((col) => (
+                      <th key={col.key} className={col.key === '__action' ? 'action-cell' : ''}>{col.label}</th>
+                    ))}
                   </tr>
                 </thead>
                 <tbody>
                   {loading ? (
                     <tr><td colSpan={COLUMNS.length} className="grid-loading">데이터를 불러오는 중...</td></tr>
-                  ) : error ? (
-                    <tr><td colSpan={COLUMNS.length} className="grid-error">오류: {error}</td></tr>
                   ) : pageRows.length === 0 ? (
                     <tr><td colSpan={COLUMNS.length} className="grid-empty">
                       {searchInput ? '검색 결과가 없습니다.' : '데이터가 없습니다.'}
@@ -174,8 +360,10 @@ function Menu() {
                     pageRows.map((row, idx) => (
                       <tr key={row.menuId ?? idx}>
                         {COLUMNS.map((col) => (
-                          <td key={col.key}>
-                            {col.key === 'menuNameTree'
+                          <td key={col.key} className={col.key === '__action' ? 'action-cell' : ''}>
+                            {col.key === '__action'
+                              ? (showAction(row) && <ActionMenu row={row} onEdit={handleEdit} onDelete={handleDelete} />)
+                              : col.key === 'menuNameTree'
                               ? <TreeCell name={row.menuNameTree} depth={row.depth ?? 0} />
                               : <CellValue colKey={col.key} value={row[col.key]} />
                             }
@@ -191,6 +379,14 @@ function Menu() {
             <Pagination current={currentPage} total={totalPages} onChange={setCurrentPage} />
           </div>
       </div>
+      {modal && (
+        <MenuModal
+          mode={modal.mode}
+          form={modal.form}
+          onClose={() => setModal(null)}
+          onSave={handleSave}
+        />
+      )}
     </div>
   )
 }
