@@ -67,6 +67,7 @@ function ActionMenu({ row, onEdit, onDelete }) {
 function DeptModal({ mode, form: initialForm, onClose, onSave }) {
   const [form, setForm]         = useState(initialForm)
   const [parentDepts, setParentDepts] = useState([])
+  const [codeStatus, setCodeStatus]   = useState(null)
   const isEdit = mode === 'edit'
 
   useEffect(() => {
@@ -88,18 +89,46 @@ function DeptModal({ mode, form: initialForm, onClose, onSave }) {
 
   const set = (key, val) => setForm((prev) => ({ ...prev, [key]: val }))
 
+  const handleDeptCodeChange = (val) => {
+    set('deptCode', val)
+    setCodeStatus(null)
+  }
+
+  const handleCheckCode = async () => {
+    if (!form.deptCode) { alert('부서코드를 입력하세요'); return }
+    if (!/^[a-zA-Z0-9]+$/.test(form.deptCode)) { alert('부서코드는 영문자와 숫자만 입력 가능합니다'); return }
+    setCodeStatus('checking')
+    try {
+      const res = await fetch(apiUri.dept.checkCode(form.deptCode), {
+        headers: serverConfig.token.authHeader(),
+      })
+      const data = await res.json()
+      if (data.messageCode === 'fail') {
+        alert(data.message)
+        setCodeStatus('taken')
+      } else {
+        setCodeStatus('ok')
+      }
+    } catch {
+      setCodeStatus(null)
+      alert('중복 확인 중 오류가 발생했습니다')
+    }
+  }
+
   const handleParentChange = (val) => {
     const parent = parentDepts.find((d) => d.deptId === val)
     setForm((prev) => ({
       ...prev,
       parentDeptId: val,
-      deptLevel: parent ? (parent.deptLevel ?? 0) + 1 : 1,
+      deptLevel: Math.min(parent ? (parent.deptLevel ?? 0) + 1 : 1, 3),
     }))
   }
 
   const handleSubmit = () => {
     if (!form.deptId)   { alert('부서 ID를 입력하세요'); return }
     if (!form.deptCode) { alert('부서코드를 입력하세요'); return }
+    if (!/^[a-zA-Z0-9]+$/.test(form.deptCode)) { alert('부서코드는 영문자와 숫자만 입력 가능합니다'); return }
+    if (!isEdit && codeStatus !== 'ok') { alert('부서코드 중복확인을 해주세요'); return }
     if (!form.deptName) { alert('부서명을 입력하세요');  return }
     onSave(form)
   }
@@ -131,7 +160,28 @@ function DeptModal({ mode, form: initialForm, onClose, onSave }) {
           )}
           <div className="modal-field">
             <label>부서코드</label>
-            <input value={form.deptCode} onChange={(e) => set('deptCode', e.target.value)} placeholder="부서코드" />
+            {isEdit ? (
+              <input value={form.deptCode} readOnly />
+            ) : (
+              <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                <div className="modal-input-row">
+                  <input
+                    value={form.deptCode}
+                    onChange={(e) => handleDeptCodeChange(e.target.value)}
+                    placeholder="부서코드"
+                  />
+                  <button
+                    type="button"
+                    className="modal-lookup-btn"
+                    onClick={handleCheckCode}
+                    disabled={codeStatus === 'checking'}
+                  >확인</button>
+                </div>
+                {codeStatus === 'ok'       && <span className="id-status ok">사용 가능한 부서코드입니다</span>}
+                {codeStatus === 'taken'    && <span className="id-status taken">이미 사용중인 부서코드입니다</span>}
+                {codeStatus === 'checking' && <span className="id-status checking">확인 중...</span>}
+              </div>
+            )}
           </div>
           <div className="modal-field">
             <label>부서명</label>
@@ -142,9 +192,9 @@ function DeptModal({ mode, form: initialForm, onClose, onSave }) {
               <div className="modal-field">
                 <label>부서 레벨</label>
                 <select value={form.deptLevel} onChange={(e) => set('deptLevel', Number(e.target.value))}>
-                  <option value={1}>1 (본부)</option>
-                  <option value={2}>2 (부)</option>
-                  <option value={3}>3 (팀)</option>
+                  <option value={1}>1</option>
+                  <option value={2}>2</option>
+                  <option value={3}>3</option>
                 </select>
               </div>
               <div className="modal-field">
@@ -153,7 +203,7 @@ function DeptModal({ mode, form: initialForm, onClose, onSave }) {
                   type="number"
                   min={0}
                   value={form.sortOrder}
-                  onChange={(e) => set('sortOrder', e.target.value.replace(/\D/g, '') === '' ? 0 : Number(e.target.value.replace(/\D/g, '')))}
+                  onChange={(e) => set('sortOrder', e.target.value.replace(/\D/g, '') === '' ? 1 : Number(e.target.value.replace(/\D/g, '')))}
                 />
               </div>
             </div>
@@ -163,9 +213,9 @@ function DeptModal({ mode, form: initialForm, onClose, onSave }) {
               <div className="modal-field">
                 <label>부서 레벨</label>
                 <select value={form.deptLevel} onChange={(e) => set('deptLevel', Number(e.target.value))}>
-                  <option value={1}>1 (본부)</option>
-                  <option value={2}>2 (부)</option>
-                  <option value={3}>3 (팀)</option>
+                  <option value={1}>1</option>
+                  <option value={2}>2</option>
+                  <option value={3}>3</option>
                 </select>
               </div>
               <div className="modal-field">
@@ -174,7 +224,7 @@ function DeptModal({ mode, form: initialForm, onClose, onSave }) {
                   type="number"
                   min={0}
                   value={form.sortOrder}
-                  onChange={(e) => set('sortOrder', e.target.value.replace(/\D/g, '') === '' ? 0 : Number(e.target.value.replace(/\D/g, '')))}
+                  onChange={(e) => set('sortOrder', e.target.value.replace(/\D/g, '') === '' ? 1 : Number(e.target.value.replace(/\D/g, '')))}
                 />
               </div>
             </div>
@@ -273,7 +323,7 @@ function Dept() {
         deptCode:  row.deptCode  ?? '',
         deptName:  row.deptName  ?? '',
         deptLevel: row.deptLevel ?? 1,
-        sortOrder: row.sortOrder ?? 0,
+        sortOrder: row.sortOrder ?? 1,
         useYn:     row.useYn     ?? 'Y',
       },
     })
@@ -282,7 +332,7 @@ function Dept() {
   const handleAdd = () => {
     setModal({
       mode: 'add',
-      form: { deptId: '', parentDeptId: '', deptCode: '', deptName: '', deptLevel: 1, sortOrder: 0, useYn: 'Y' },
+      form: { deptId: '', parentDeptId: '', deptCode: '', deptName: '', deptLevel: 1, sortOrder: 1, useYn: 'Y' },
     })
   }
 
@@ -390,7 +440,7 @@ function Dept() {
                           {col.key === '__action'
                             ? (showAction(row) && <ActionMenu row={row} onEdit={handleEdit} onDelete={handleDelete} />)
                             : col.key === 'deptNameTree'
-                            ? <TreeCell name={row.deptNameTree} depth={row.depth ?? 0} />
+                            ? <TreeCell name={row.deptName} depth={row.depth ?? 0} />
                             : <CellValue colKey={col.key} value={row[col.key]} />
                           }
                         </td>

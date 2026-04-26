@@ -241,9 +241,9 @@ function MenuModal({ mode, form: initialForm, onClose, onSave }) {
                 <label>정렬 순서</label>
                 <input
                   type="number"
-                  min={0}
+                  min={1}
                   value={form.sortOrder}
-                  onChange={(e) => set('sortOrder', e.target.value.replace(/\D/g, '') === '' ? 0 : Number(e.target.value.replace(/\D/g, '')))}
+                  onChange={(e) => set('sortOrder', e.target.value.replace(/\D/g, '') === '' ? 1 : Number(e.target.value.replace(/\D/g, '')))}
                 />
               </div>
               <div className="modal-field modal-field-v">
@@ -388,7 +388,7 @@ function Menu() {
   const handleAdd = () => {
     setModal({
       mode: 'add',
-      form: { menuId: '', parentMenuId: '', menuName: '', menuLevel: 1, menuDirYn: 'N', programId: '', programUrl: '', sortOrder: 0, useYn: 'Y' },
+      form: { menuId: '', parentMenuId: '', menuName: '', menuLevel: 1, menuDirYn: 'N', programId: '', programUrl: '', sortOrder: 1, useYn: 'Y' },
     })
   }
 

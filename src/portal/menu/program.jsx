@@ -97,9 +97,9 @@ function ProgramModal({ mode, form: initialForm, onClose, onSave }) {
               <label>정렬 순서</label>
               <input
                 type="number"
-                min={0}
+                min={1}
                 value={form.sortOrder}
-                onChange={(e) => set('sortOrder', e.target.value.replace(/\D/g, '') === '' ? 0 : Number(e.target.value.replace(/\D/g, '')))}
+                onChange={(e) => set('sortOrder', e.target.value.replace(/\D/g, '') === '' ? 1 : Number(e.target.value.replace(/\D/g, '')))}
               />
             </div>
             <div className="modal-field">
@@ -202,7 +202,7 @@ function Program() {
         programId:   row.programId   ?? '',
         programName: row.programName ?? '',
         programUrl:  row.programUrl  ?? '',
-        sortOrder:   row.sortOrder   ?? 0,
+        sortOrder:   row.sortOrder   ?? 1,
         useYn:       row.useYn       ?? 'Y',
       },
     })
@@ -211,7 +211,7 @@ function Program() {
   const handleAdd = () => {
     setModal({
       mode: 'add',
-      form: { programId: '', programName: '', programUrl: '', sortOrder: 0, useYn: 'Y' },
+      form: { programId: '', programName: '', programUrl: '', sortOrder: 1, useYn: 'Y' },
     })
   }
 

@@ -202,7 +202,7 @@ function UserModal({ mode, form: initialForm, onClose, onSave }) {
           <div className="modal-field">
             <label>TEL</label>
             <div className="modal-phone-inputs">
-              <input value={form.phone1 ?? ''} maxLength={3} onChange={(e) => set('phone1', onlyDigits(e.target.value, 3))} placeholder="010" />
+              <input value={form.phone1 ?? ''} maxLength={3} onChange={(e) => set('phone1', onlyDigits(e.target.value, 3))} placeholder="" />
               <span>-</span>
               <input value={form.phone2 ?? ''} maxLength={4} onChange={(e) => set('phone2', onlyDigits(e.target.value, 4))} placeholder="0000" />
               <span>-</span>
@@ -338,7 +338,7 @@ function User() {
   const handleAdd = () => {
     setModal({
       mode: 'add',
-      form: { userId: '', userName: '', password: '', deptId: '', email: '', phone1: '', phone2: '', phone3: '', position: '', jobGrade: '', useYn: 'Y', managerYn: 'N' },
+      form: { userId: '', userName: '', password: '', deptId: '', email: '', phone1: '010', phone2: '', phone3: '', position: '', jobGrade: '', useYn: 'Y', managerYn: 'N' },
     })
   }
 
