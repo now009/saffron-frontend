@@ -11,12 +11,22 @@ const SEARCH_FIELDS = [
 ]
 
 const COLUMNS = [
-  { key: 'code',        label: '코드',   width: '160px' },
-  { key: '__codeName',  label: '코드명', width: '220px' },
-  { key: 'description', label: '설명',   width: '280px' },
-  { key: 'useYn',       label: '사용',   width: '80px'  },
+  { key: 'code',       label: '코드',   width: '180px' },
+  { key: '__codeName', label: '코드명', width: '400px' },
+  { key: 'useYn',      label: '사용',   width: '80px'  },
   { key: '__action',    label: '',       width: '48px'  },
 ]
+
+function flattenTree(nodes, depth = 0, parentCode = '') {
+  const result = []
+  for (const node of nodes) {
+    result.push({ ...node, depth, parentCode: parentCode || node.parentCode || '' })
+    if (node.children?.length) {
+      result.push(...flattenTree(node.children, depth + 1, node.code))
+    }
+  }
+  return result
+}
 
 function TreeCell({ name, depth }) {
   return (
@@ -62,15 +72,48 @@ function ActionMenu({ row, onEdit, onDelete }) {
 }
 
 function CodeModal({ mode, form: initialForm, parentCodes, onClose, onSave }) {
-  const [form, setForm] = useState(initialForm)
+  const [form, setForm]           = useState(initialForm)
+  const [codeStatus, setCodeStatus] = useState(null)
   const isEdit = mode === 'edit'
 
   const set = (key, val) => setForm((prev) => ({ ...prev, [key]: val }))
 
-  const handleSubmit = () => {
+  const handleCodeChange = (val) => {
+    set('code', val)
+    setCodeStatus(null)
+  }
+
+  const handleCheckCode = async () => {
+    if (!form.code) { alert('코드를 입력하세요'); return false }
+    setCodeStatus('checking')
+    try {
+      const res = await fetch(apiUri.code.checkCode(form.code), {
+        headers: serverConfig.token.authHeader(),
+      })
+      const data = await res.json()
+      if (data.messageCode === 'fail') {
+        alert(data.message)
+        setCodeStatus('taken')
+        return false
+      } else {
+        setCodeStatus('ok')
+        return true
+      }
+    } catch {
+      setCodeStatus(null)
+      alert('중복 확인 중 오류가 발생했습니다')
+      return false
+    }
+  }
+
+  const handleSubmit = async () => {
     if (!form.code)     { alert('코드를 입력하세요');   return }
+    if (!isEdit && codeStatus !== 'ok') {
+      const ok = await handleCheckCode()
+      if (!ok) return
+    }
     if (!form.codeName) { alert('코드명을 입력하세요'); return }
-    onSave(form)
+    onSave({ ...form, parentCode: form.parentCode || null })
   }
 
   return (
@@ -83,10 +126,29 @@ function CodeModal({ mode, form: initialForm, parentCodes, onClose, onSave }) {
         <div className="modal-body">
           <div className="modal-field">
             <label>코드</label>
-            {isEdit
-              ? <input value={form.code} readOnly />
-              : <input value={form.code} onChange={(e) => set('code', e.target.value)} placeholder="코드" autoComplete="off" />
-            }
+            {isEdit ? (
+              <input value={form.code} readOnly />
+            ) : (
+              <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                <div className="modal-input-row">
+                  <input
+                    value={form.code}
+                    onChange={(e) => handleCodeChange(e.target.value)}
+                    placeholder="코드"
+                    autoComplete="off"
+                  />
+                  <button
+                    type="button"
+                    className="modal-lookup-btn"
+                    onClick={handleCheckCode}
+                    disabled={codeStatus === 'checking'}
+                  >확인</button>
+                </div>
+                {codeStatus === 'ok'       && <span className="id-status ok">사용 가능한 코드입니다</span>}
+                {codeStatus === 'taken'    && <span className="id-status taken">이미 사용중인 코드입니다</span>}
+                {codeStatus === 'checking' && <span className="id-status checking">확인 중...</span>}
+              </div>
+            )}
           </div>
           <div className="modal-field">
             <label>코드명</label>
@@ -100,10 +162,6 @@ function CodeModal({ mode, form: initialForm, parentCodes, onClose, onSave }) {
                 <option key={p.code} value={p.code}>{p.codeName} ({p.code})</option>
               ))}
             </select>
-          </div>
-          <div className="modal-field">
-            <label>설명</label>
-            <input value={form.description} onChange={(e) => set('description', e.target.value)} placeholder="설명" autoComplete="off" />
           </div>
           <div className="modal-field-row">
             <div className="modal-field">
@@ -187,7 +245,8 @@ function Code() {
       })
       if (!res.ok) throw new Error(`서버 오류 (${res.status})`)
       const data = await res.json()
-      setRows(Array.isArray(data) ? data : data.list ?? data.content ?? [])
+      const tree = Array.isArray(data) ? data : data.list ?? data.content ?? []
+      setRows(flattenTree(tree))
     } catch (err) {
       alert(err.message)
     } finally {
@@ -202,7 +261,7 @@ function Code() {
     fetchData(searchField, searchInput)
   }
 
-  const parentCodes = rows.filter((r) => !r.parentCode)
+  const parentCodes = rows.filter((r) => r.depth === 0)
 
   const handleEdit = (row) => {
     setModal({
@@ -228,7 +287,7 @@ function Code() {
   const handleSave = async (form) => {
     const isEdit = modal.mode === 'edit'
     try {
-      const url = isEdit ? apiUri.code.update(form.code) : apiUri.code.create()
+      const url = isEdit ? apiUri.code.update() : apiUri.code.create()
       const res = await fetch(url, {
         method: 'POST',
         headers: { ...serverConfig.token.authHeader(), 'Content-Type': 'application/json' },
@@ -237,7 +296,7 @@ function Code() {
       const data = await res.json()
       setModal(null)
       if (Array.isArray(data)) {
-        setRows(data)
+        setRows(flattenTree(data))
         setCurrentPage(1)
       } else if (data.messageCode === 'fail') {
         alert(data.message)
@@ -269,7 +328,7 @@ function Code() {
     }
   }
 
-  const depth    = (row) => (row.parentCode ? 1 : 0)
+  const depth    = (row) => row.depth ?? 0
   const hasChild = new Set(rows.map((r) => r.parentCode).filter(Boolean))
   const showAction = (row) => !hasChild.has(row.code)
 

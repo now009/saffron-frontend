@@ -53,11 +53,12 @@ const apiUri = {
     update: (userId) => `${portal}/portal/roleSetting/${userId}`,
   },
   code: {
-    list:   ()   => `${portal}/portal/codes/list`,
-    detail: (id) => `${portal}/portal/codes/${id}`,
-    create: ()   => `${portal}/portal/codes`,
-    update: (id) => `${portal}/portal/codes/${id}`,
-    delete: (id) => `${portal}/portal/codes/${id}`,
+    list:      ()     => `${portal}/portal/codes/list`,
+    detail:    (id)   => `${portal}/portal/codes/${id}`,
+    create:    ()     => `${portal}/portal/codes/save`,
+    update:    ()     => `${portal}/portal/codes/update`,
+    delete:    (id)   => `${portal}/portal/codes/delete/${id}`,
+    checkCode: (code) => `${portal}/portal/codes/check-code/${code}`,
   },
   schedule: {
     list:   ()   => `${portal}/portal/schedule/list`,
