@@ -229,7 +229,7 @@ function MenuModal({ mode, form: initialForm, onClose, onSave }) {
           </div>
           {!isEdit && (
             <div className="modal-field-row">
-              <div className="modal-field">
+              <div className="modal-field modal-field-v">
                 <label>메뉴 레벨</label>
                 <select value={form.menuLevel} onChange={(e) => set('menuLevel', Number(e.target.value))}>
                   <option value={1}>1</option>
@@ -237,7 +237,7 @@ function MenuModal({ mode, form: initialForm, onClose, onSave }) {
                   <option value={3}>3</option>
                 </select>
               </div>
-              <div className="modal-field">
+              <div className="modal-field modal-field-v">
                 <label>정렬 순서</label>
                 <input
                   type="number"
@@ -246,7 +246,7 @@ function MenuModal({ mode, form: initialForm, onClose, onSave }) {
                   onChange={(e) => set('sortOrder', e.target.value.replace(/\D/g, '') === '' ? 0 : Number(e.target.value.replace(/\D/g, '')))}
                 />
               </div>
-              <div className="modal-field">
+              <div className="modal-field modal-field-v">
                 <label>디렉토리 여부</label>
                 <select value={form.menuDirYn ?? 'N'} onChange={(e) => set('menuDirYn', e.target.value)}>
                   <option value="Y">Y</option>

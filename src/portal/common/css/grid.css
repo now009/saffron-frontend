@@ -484,18 +484,46 @@ table.grid-table {
 
 .modal-field-row .modal-field {
   flex: 1;
+  min-width: 0;
 }
 
 .modal-field {
   display: flex;
-  flex-direction: column;
-  gap: 5px;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
 }
 
 .modal-field label {
   font-size: 0.78rem;
   font-weight: 600;
   color: #4b5563;
+  width: 80px;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.modal-field > input,
+.modal-field > select {
+  flex: 1;
+  min-width: 0;
+}
+
+.modal-field > .modal-input-row,
+.modal-field > .modal-phone-inputs {
+  flex: 1;
+  min-width: 0;
+}
+
+/* 세로(top-label) 유지가 필요한 필드 */
+.modal-field.modal-field-v {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 5px;
+}
+
+.modal-field.modal-field-v label {
+  width: auto;
 }
 
 .modal-field input,
@@ -515,7 +543,7 @@ table.grid-table {
   border-color: #4f7ef8;
 }
 
-.modal-field input:read-only {
+.modal-field input[readonly] {
   background: #f9fafb;
   color: #9ca3af;
   cursor: default;
@@ -570,6 +598,7 @@ table.grid-table {
 
 .modal-input-row input {
   flex: 1;
+  min-width: 0;
 }
 
 .modal-lookup-btn {
@@ -577,11 +606,12 @@ table.grid-table {
   color: #374151;
   border: 1px solid #d1d5db;
   border-radius: 6px;
-  padding: 0 14px;
+  padding: 0 10px;
   font-size: 0.82rem;
   font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
+  flex-shrink: 0;
   transition: background 0.12s, border-color 0.12s;
 }
 
@@ -694,4 +724,33 @@ table.grid-table {
 .radio-cell input[type="radio"] {
   cursor: pointer;
   accent-color: #4f7ef8;
+}
+
+/* 사용자 ID 중복확인 상태 */
+.id-status {
+  font-size: 0.75rem;
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+.id-status.ok      { color: #16a34a; }
+.id-status.taken   { color: #dc2626; }
+.id-status.checking { color: #9ca3af; }
+
+/* TEL 3분리 입력 */
+.modal-phone-inputs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.modal-phone-inputs input {
+  flex: 1;
+  min-width: 0;
+}
+
+.modal-phone-inputs span {
+  color: #9ca3af;
+  font-weight: 600;
+  flex-shrink: 0;
 }
