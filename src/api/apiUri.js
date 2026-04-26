@@ -48,9 +48,11 @@ const apiUri = {
     nextId:    ()     => `${portal}/portal/roles/next-id`,
   },
   roleSetting: {
-    list:   ()       => `${portal}/portal/roleSetting/list`,
-    detail: (userId) => `${portal}/portal/roleSetting/${userId}`,
-    update: (userId) => `${portal}/portal/roleSetting/${userId}`,
+    roles:     ()         => `${portal}/portal/rolesetting`,
+    menus:     (roleCode) => `${portal}/portal/rolesetting/${roleCode}/menus`,
+    saveMenus: (roleCode) => `${portal}/portal/rolesetting/${roleCode}/menus`,
+    users:     (roleCode) => `${portal}/portal/rolesetting/${roleCode}/users`,
+    depts:     (roleCode) => `${portal}/portal/rolesetting/${roleCode}/depts`,
   },
   code: {
     list:      ()     => `${portal}/portal/codes/list`,
