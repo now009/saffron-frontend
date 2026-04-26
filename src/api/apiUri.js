@@ -31,11 +31,11 @@ const apiUri = {
     parentMenus: ()   => `${portal}/portal/menus/parent-menus`,
   },
   program: {
-    list:   ()   => `${portal}/portal/program/list`,
-    detail: (id) => `${portal}/portal/program/${id}`,
-    create: ()   => `${portal}/portal/program`,
-    update: (id) => `${portal}/portal/program/${id}`,
-    delete: (id) => `${portal}/portal/program/${id}`,
+    list:   ()   => `${portal}/portal/programs/list`,
+    detail: (id) => `${portal}/portal/programs/${id}`,
+    create: ()   => `${portal}/portal/programs`,
+    update: (id) => `${portal}/portal/programs/${id}`,
+    delete: (id) => `${portal}/portal/programs/${id}`,
   },
   role: {
     list:   ()   => `${portal}/portal/role/list`,

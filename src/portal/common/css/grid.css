@@ -561,3 +561,137 @@ table.grid-table {
   background: #f3f4f6;
   border-color: #9ca3af;
 }
+
+/* 프로그램 조회 버튼 행 */
+.modal-input-row {
+  display: flex;
+  gap: 6px;
+}
+
+.modal-input-row input {
+  flex: 1;
+}
+
+.modal-lookup-btn {
+  background: #f3f4f6;
+  color: #374151;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 0 14px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.12s, border-color 0.12s;
+}
+
+.modal-lookup-btn:hover:not(:disabled) {
+  background: #eef2ff;
+  border-color: #a5b4fc;
+  color: #4f7ef8;
+}
+
+.modal-lookup-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.modal-lookup-btn svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+  display: block;
+}
+
+/* 프로그램 목록 서브 모달 */
+.modal-overlay-top {
+  z-index: 1100;
+  justify-content: flex-start;
+  padding-left: calc(50% + 10px);
+}
+
+.modal-program-search {
+  padding: 12px 16px;
+  border-bottom: 1px solid #e2e6ea;
+}
+
+.modal-program-search .grid-search-bar {
+  width: 100%;
+}
+
+.modal-program-search .grid-search-bar input {
+  width: 100%;
+}
+
+.modal-program-list {
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.modal-program-empty {
+  padding: 40px 20px;
+  text-align: center;
+  color: #9ca3af;
+  font-size: 0.88rem;
+}
+
+.modal-program-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.84rem;
+}
+
+.modal-program-table thead tr {
+  background: #f5f7ff;
+  position: sticky;
+  top: 0;
+}
+
+.modal-program-table th {
+  padding: 10px 16px;
+  text-align: left;
+  font-weight: 600;
+  color: #4b5563;
+  font-size: 0.75rem;
+  border-bottom: 1px solid #e2e6ea;
+  white-space: nowrap;
+}
+
+.modal-program-table td {
+  padding: 10px 16px;
+  color: #374151;
+  border-bottom: 1px solid #f0f2f7;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 260px;
+}
+
+.modal-program-row {
+  cursor: pointer;
+  transition: background 0.12s;
+}
+
+.modal-program-row:hover {
+  background: #eef2ff;
+}
+
+.modal-program-row.selected {
+  background: #eef2ff;
+}
+
+.modal-program-row.selected td {
+  color: #4f7ef8;
+  font-weight: 600;
+}
+
+.radio-cell {
+  width: 36px;
+  text-align: center;
+  padding: 10px 8px !important;
+}
+
+.radio-cell input[type="radio"] {
+  cursor: pointer;
+  accent-color: #4f7ef8;
+}

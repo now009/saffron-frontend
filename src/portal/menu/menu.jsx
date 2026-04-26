@@ -16,7 +16,8 @@ const COLUMNS = [
   { key: 'programId',    label: '프로그램 ID',   width: '120px' },
   { key: 'programName',  label: '프로그램명',    width: '150px' },
   { key: 'programUrl',   label: '프로그램 URI',  width: '200px' },
-  { key: 'useYn',        label: '메뉴사용여부',  width: '100px' },
+  { key: 'menuDirYn',    label: '디렉토리',      width: '80px'  },
+  { key: 'useYn',        label: '사용',          width: '80px'  },
   { key: '__action',     label: '',             width: '48px'  },
 ]
 
@@ -33,7 +34,7 @@ function TreeCell({ name, depth }) {
 }
 
 function CellValue({ colKey, value }) {
-  if (colKey === 'useYn') {
+  if (colKey === 'useYn' || colKey === 'menuDirYn') {
     return <span className={`grid-badge ${value === 'Y' ? 'on' : 'off'}`}>{value ?? '-'}</span>
   }
   return <>{value ?? '-'}</>
@@ -65,9 +66,95 @@ function ActionMenu({ row, onEdit, onDelete }) {
   )
 }
 
+function ProgramSelectModal({ onClose, onSelect }) {
+  const [programs, setPrograms]   = useState([])
+  const [loading, setLoading]     = useState(false)
+  const [keyword, setKeyword]     = useState('')
+  const [selected, setSelected]   = useState(null)
+
+  const fetchPrograms = (programId = '') => {
+    setLoading(true)
+    setSelected(null)
+    fetch(apiUri.program.list(), {
+      method: 'POST',
+      headers: { ...serverConfig.token.authHeader(), 'Content-Type': 'application/json' },
+      body: JSON.stringify({ programId, programName: '', programUrl: '' }),
+    })
+      .then((r) => r.json())
+      .then((data) => setPrograms(Array.isArray(data) ? data : data.list ?? data.content ?? []))
+      .catch(() => alert('프로그램 목록 조회 실패'))
+      .finally(() => setLoading(false))
+  }
+
+  useEffect(() => { fetchPrograms() }, [])
+
+  const handleConfirm = () => {
+    if (!selected) { alert('프로그램을 선택하세요'); return }
+    onSelect(selected)
+  }
+
+  return (
+    <div className="modal-overlay modal-overlay-top" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose() }}>
+      <div className="modal-box">
+        <div className="modal-header">
+          <span className="modal-title">프로그램 목록</span>
+          <button className="modal-close" onClick={onClose}>✕</button>
+        </div>
+        <div className="modal-program-search">
+          <div className="grid-search-bar">
+            <input
+              type="text"
+              placeholder="프로그램 ID"
+              value={keyword}
+              onChange={(e) => setKeyword(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && fetchPrograms(keyword)}
+            />
+            <button className="grid-search-btn" onClick={() => fetchPrograms(keyword)}>
+              <SearchIcon />
+            </button>
+          </div>
+        </div>
+        <div className="modal-program-list">
+          {loading ? (
+            <div className="modal-program-empty">조회 중...</div>
+          ) : programs.length === 0 ? (
+            <div className="modal-program-empty">데이터가 없습니다.</div>
+          ) : (
+            <table className="modal-program-table">
+              <thead>
+                <tr>
+                  <th className="radio-cell"></th>
+                  <th>프로그램 ID</th>
+                  <th>프로그램 URL</th>
+                </tr>
+              </thead>
+              <tbody>
+                {programs.map((p) => (
+                  <tr key={p.programId} className={`modal-program-row${selected?.programId === p.programId ? ' selected' : ''}`} onClick={() => setSelected(p)}>
+                    <td className="radio-cell">
+                      <input type="radio" readOnly checked={selected?.programId === p.programId} />
+                    </td>
+                    <td>{p.programId}</td>
+                    <td>{p.programUrl ?? '-'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+        <div className="modal-footer">
+          <button className="modal-btn-cancel" onClick={onClose}>취소</button>
+          <button className="modal-btn-save" onClick={handleConfirm}>선택</button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function MenuModal({ mode, form: initialForm, onClose, onSave }) {
-  const [form, setForm]           = useState(initialForm)
+  const [form, setForm]               = useState(initialForm)
   const [parentMenus, setParentMenus] = useState([])
+  const [programModal, setProgramModal] = useState(false)
   const isEdit = mode === 'edit'
 
   useEffect(() => {
@@ -83,18 +170,32 @@ function MenuModal({ mode, form: initialForm, onClose, onSave }) {
   }, [isEdit])
 
   const set = (key, val) => {
-    setForm((prev) => {
-      const next = { ...prev, [key]: val }
-      if (key === 'parentMenuId') next.menuLevel = val ? (prev.menuLevel || 1) : 0
-      return next
-    })
+    setForm((prev) => ({ ...prev, [key]: val }))
+  }
+
+  const handleParentChange = (val) => {
+    const parent = parentMenus.find((m) => m.menuId === val)
+    setForm((prev) => ({
+      ...prev,
+      parentMenuId: val,
+      menuLevel: parent ? (parent.menuLevel ?? 0) + 1 : 1,
+    }))
+  }
+
+  const handleProgramSelect = (p) => {
+    setForm((prev) => ({ ...prev, programId: p.programId ?? '', programUrl: p.programUrl ?? '' }))
+    setProgramModal(false)
   }
 
   const handleSubmit = () => {
-    if (!form.menuId)    { alert('메뉴 ID를 입력하세요');     return }
-    if (!form.menuName)  { alert('메뉴명을 입력하세요');      return }
-    if (!form.programId) { alert('프로그램 ID를 입력하세요'); return }
-    onSave(form)
+    if (!form.menuId)   { alert('메뉴 ID를 입력하세요');  return }
+    if (!form.menuName) { alert('메뉴명을 입력하세요');   return }
+    if (!isEdit && form.menuDirYn !== 'Y' && !form.parentMenuId) { alert('상위메뉴를 입력하세요'); return }
+    if (form.menuDirYn !== 'Y' && !form.programId) { alert('프로그램 ID를 입력하세요'); return }
+    const payload = form.menuDirYn === 'Y'
+      ? { ...form, programId: '', programUrl: '' }
+      : form
+    onSave(payload)
   }
 
   return (
@@ -112,7 +213,7 @@ function MenuModal({ mode, form: initialForm, onClose, onSave }) {
           {!isEdit && (
             <div className="modal-field">
               <label>상위 메뉴 ID</label>
-              <select value={form.parentMenuId} onChange={(e) => set('parentMenuId', e.target.value)}>
+              <select value={form.parentMenuId} onChange={(e) => handleParentChange(e.target.value)}>
                 <option value="">없음 (최상위)</option>
                 {parentMenus.map((m) => (
                   <option key={m.menuId} value={m.menuId}>
@@ -131,24 +232,52 @@ function MenuModal({ mode, form: initialForm, onClose, onSave }) {
               <div className="modal-field">
                 <label>메뉴 레벨</label>
                 <select value={form.menuLevel} onChange={(e) => set('menuLevel', Number(e.target.value))}>
-                  <option value={0}>0</option>
                   <option value={1}>1</option>
                   <option value={2}>2</option>
+                  <option value={3}>3</option>
                 </select>
               </div>
               <div className="modal-field">
                 <label>정렬 순서</label>
-                <select value={form.sortOrder} onChange={(e) => set('sortOrder', Number(e.target.value))}>
-                  {Array.from({ length: 21 }, (_, i) => (
-                    <option key={i} value={i}>{i}</option>
-                  ))}
+                <input
+                  type="number"
+                  min={0}
+                  value={form.sortOrder}
+                  onChange={(e) => set('sortOrder', e.target.value.replace(/\D/g, '') === '' ? 0 : Number(e.target.value.replace(/\D/g, '')))}
+                />
+              </div>
+              <div className="modal-field">
+                <label>디렉토리 여부</label>
+                <select value={form.menuDirYn ?? 'N'} onChange={(e) => set('menuDirYn', e.target.value)}>
+                  <option value="Y">Y</option>
+                  <option value="N">N</option>
                 </select>
               </div>
             </div>
           )}
+          {isEdit && (
+            <div className="modal-field">
+              <label>디렉토리 여부</label>
+              <select value={form.menuDirYn ?? 'N'} onChange={(e) => set('menuDirYn', e.target.value)}>
+                <option value="Y">Y</option>
+                <option value="N">N</option>
+              </select>
+            </div>
+          )}
           <div className="modal-field">
             <label>프로그램 ID</label>
-            <input value={form.programId} onChange={(e) => set('programId', e.target.value)} placeholder="프로그램 ID" />
+            <div className="modal-input-row">
+              <input value={form.programId} readOnly disabled={form.menuDirYn === 'Y'} placeholder={form.menuDirYn === 'Y' ? '' : '프로그램을 선택하세요'} />
+              <button className="modal-lookup-btn" disabled={form.menuDirYn === 'Y'} onClick={() => setProgramModal(true)}>
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div className="modal-field">
+            <label>프로그램 URL</label>
+            <input value={form.programUrl ?? ''} readOnly disabled={form.menuDirYn === 'Y'} placeholder={form.menuDirYn === 'Y' ? '' : '프로그램 선택 시 자동 입력'} />
           </div>
           <div className="modal-field">
             <label>사용 여부</label>
@@ -163,6 +292,9 @@ function MenuModal({ mode, form: initialForm, onClose, onSave }) {
           <button className="modal-btn-save" onClick={handleSubmit}>저장</button>
         </div>
       </div>
+      {programModal && (
+        <ProgramSelectModal onClose={() => setProgramModal(false)} onSelect={handleProgramSelect} />
+      )}
     </div>
   )
 }
@@ -249,14 +381,14 @@ function Menu() {
   const handleEdit = (row) => {
     setModal({
       mode: 'edit',
-      form: { menuId: row.menuId ?? '', menuName: row.menuName ?? '', programId: row.programId ?? '', useYn: row.useYn ?? 'Y' },
+      form: { menuId: row.menuId ?? '', menuName: row.menuName ?? '', menuDirYn: row.menuDirYn ?? 'N', programId: row.programId ?? '', programUrl: row.programUrl ?? '', useYn: row.useYn ?? 'Y' },
     })
   }
 
   const handleAdd = () => {
     setModal({
       mode: 'add',
-      form: { menuId: '', parentMenuId: '', menuName: '', menuLevel: 0, programId: '', sortOrder: 0, useYn: 'Y' },
+      form: { menuId: '', parentMenuId: '', menuName: '', menuLevel: 1, menuDirYn: 'N', programId: '', programUrl: '', sortOrder: 0, useYn: 'Y' },
     })
   }
 
@@ -270,13 +402,14 @@ function Menu() {
         body: JSON.stringify(form),
       })
       const data = await res.json()
+      setModal(null)
       if (data.messageCode === 'fail') {
         alert(data.message)
         return
       }
-      setModal(null)
       fetchData(searchField, searchInput)
     } catch (err) {
+      setModal(null)
       alert(`저장 실패 (${err.message})`)
     }
   }
@@ -335,7 +468,7 @@ function Menu() {
               </div>
             </div>
 
-            <div className="grid-wrap">
+            <div className="grid-wrap" style={{ minHeight: '453px' }}>
               <table className="grid-table">
                 <colgroup>
                   {COLUMNS.map((col) => (
