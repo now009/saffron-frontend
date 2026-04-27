@@ -12,15 +12,9 @@
       "Bash(git commit -m ' *)",
       "Bash(git push *)",
       "Bash(read dir *)",
-      "Bash(npm install *)",
-      "Bash(curl -v -X POST http://localhost:8090/auth/login -H \"Content-Type: application/x-www-form-urlencoded\" -d \"userId=admin&password=1234!\" --max-time 5)",
-      "Bash(curl -v http://localhost:8090 --max-time 5)",
-      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:8080/main)",
-      "Bash(curl -s -i -X POST http://localhost:8090/auth/login -H \"Content-Type: application/x-www-form-urlencoded\" -H \"Accept: application/json\" -H \"X-Requested-With: XMLHttpRequest\" -H \"Origin: http://localhost:8000\" -d \"userId=admin&password=1234!\" --max-time 5)",
-      "Bash(curl -s -i -X OPTIONS http://localhost:8090/auth/login -H \"Origin: http://localhost:8000\" -H \"Access-Control-Request-Method: POST\" -H \"Access-Control-Request-Headers: content-type\" --max-time 5)",
-      "Bash(curl -s -i \"http://localhost:8080/main?access_token=test\" -H \"Origin: http://localhost:8000\" --max-time 5)",
-      "Bash(curl -s -i -L -X POST \"http://localhost:8090/auth/login\" -H \"Content-Type: application/x-www-form-urlencoded\" -H \"Origin: http://localhost:8000\" -d \"userId=admin&password=1234!\" --max-time 5)",
-      "Bash(curl -s -i -X POST \"http://localhost:8090/auth/login\" -H \"Content-Type: application/x-www-form-urlencoded\" -H \"Origin: http://localhost:8000\" -d \"userId=admin&password=1234!\" --max-time 5)"
+      "Bash(git commit *)",
+      "Bash(npx vite *)",
+      "Bash(git pull *)"
     ]
   }
 }
