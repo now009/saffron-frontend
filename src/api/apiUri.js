@@ -52,7 +52,9 @@ const apiUri = {
     menus:     (roleCode) => `${portal}/portal/rolesetting/${roleCode}/menus`,
     saveMenus: (roleCode) => `${portal}/portal/rolesetting/${roleCode}/menus`,
     users:     (roleCode) => `${portal}/portal/rolesetting/${roleCode}/users`,
+    saveUsers: (roleCode) => `${portal}/portal/rolesetting/${roleCode}/users`,
     depts:     (roleCode) => `${portal}/portal/rolesetting/${roleCode}/depts`,
+    saveDepts: (roleCode) => `${portal}/portal/rolesetting/${roleCode}/depts`,
   },
   code: {
     list:      ()     => `${portal}/portal/codes/list`,
