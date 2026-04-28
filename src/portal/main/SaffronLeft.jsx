@@ -50,46 +50,58 @@ function SaffronLeft({ open, menus }) {
     })
   }
 
+  const noticeActive = location.pathname.startsWith('/portal/notices')
+
   return (
     <aside className={`left-sidebar ${open ? '' : 'collapsed'}`}>
       <div className="sidebar-inner">
-        {roots.length === 0 ? (
-          <div className="sidebar-empty">접근 가능한 메뉴가 없습니다.</div>
-        ) : (
-          roots.map((root) => {
-            const isOpen   = expanded.has(root.menuId)
-            const children = childrenByParent.get(root.menuId) ?? []
-            return (
-              <div key={root.menuId} className="sidebar-section">
-                <button
-                  className="sidebar-section-header"
-                  onClick={() => toggleSection(root.menuId)}
-                >
-                  <span>{root.menuName}</span>
-                  <ChevronIcon open={isOpen} />
-                </button>
-                {isOpen && (
-                  <ul className="sidebar-submenu">
-                    {children.length === 0 ? (
-                      <li className="sidebar-empty-sub">하위 메뉴 없음</li>
-                    ) : children.map((c) => (
-                      <li
-                        key={c.menuId}
-                        className={`sidebar-item ${location.pathname === c.programUrl ? 'active' : ''}`}
-                      >
-                        {c.programUrl ? (
-                          <Link to={c.programUrl}>{c.menuName}</Link>
-                        ) : (
-                          <span className="sidebar-item-disabled">{c.menuName}</span>
-                        )}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            )
-          })
-        )}
+        <div className="sidebar-dynamic">
+          {roots.length === 0 ? (
+            <div className="sidebar-empty">접근 가능한 메뉴가 없습니다.</div>
+          ) : (
+            roots.map((root) => {
+              const isOpen   = expanded.has(root.menuId)
+              const children = childrenByParent.get(root.menuId) ?? []
+              return (
+                <div key={root.menuId} className="sidebar-section">
+                  <button
+                    className="sidebar-section-header"
+                    onClick={() => toggleSection(root.menuId)}
+                  >
+                    <span>{root.menuName}</span>
+                    <ChevronIcon open={isOpen} />
+                  </button>
+                  {isOpen && (
+                    <ul className="sidebar-submenu">
+                      {children.length === 0 ? (
+                        <li className="sidebar-empty-sub">하위 메뉴 없음</li>
+                      ) : children.map((c) => (
+                        <li
+                          key={c.menuId}
+                          className={`sidebar-item ${location.pathname === c.programUrl ? 'active' : ''}`}
+                        >
+                          {c.programUrl ? (
+                            <Link to={c.programUrl}>{c.menuName}</Link>
+                          ) : (
+                            <span className="sidebar-item-disabled">{c.menuName}</span>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              )
+            })
+          )}
+        </div>
+        <div className="sidebar-pinned">
+          <Link
+            to="/portal/notices/list"
+            className={`sidebar-pinned-item ${noticeActive ? 'active' : ''}`}
+          >
+            공지사항
+          </Link>
+        </div>
       </div>
     </aside>
   )

@@ -9,6 +9,8 @@ import RoleSetting from '../role/roleSetting.jsx'
 import Code from '../system/code.jsx'
 import Schedule from '../system/schedule.jsx'
 import EnvSetting from '../system/envSetting.jsx'
+import Notice from '../notice/notice.jsx'
+import NoticeView from '../notice/noticeView.jsx'
 
 function Dashboard() {
   return (
@@ -54,6 +56,9 @@ function SaffronMain() {
         <Route path="/system/role-setting/list" element={<RoleSetting />} />
         <Route path="/system/schedule/list"     element={<Schedule />} />
         <Route path="/system/env-setting/list"  element={<EnvSetting />} />
+        <Route path="/portal/notices/list"      element={<Notice />} />
+        <Route path="/portal/notices/new"       element={<NoticeView />} />
+        <Route path="/portal/notices/:noticeId" element={<NoticeView />} />
       </Routes>
     </main>
   )

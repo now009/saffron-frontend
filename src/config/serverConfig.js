@@ -38,6 +38,10 @@ const serverConfig = {
       const p = decodeJwt(localStorage.getItem(TOKEN_KEY))
       return !p || (typeof p.exp === 'number' && p.exp * 1000 <= Date.now())
     },
+    isAdmin: () => {
+      const p = decodeJwt(localStorage.getItem(TOKEN_KEY))
+      return String(p?.manager ?? '').toLowerCase() === 'y'
+    },
   },
 }
 

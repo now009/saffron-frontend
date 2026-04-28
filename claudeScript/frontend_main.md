@@ -607,8 +607,8 @@ endpoint를 체크해줘
 
   ----------------------
 
-  인증 Flow
-  Frontend (8000)
+인증 Flow
+Frontend (8000)
     ↓ POST /auth/login (userId, password)
 Auth (8090)
     ↓ access_token 발급 후 redirect → http://localhost:8080/main?access_token=xxx
@@ -617,3 +617,35 @@ Backend (8080) /main
 Frontend /main
     ↓ URL에서 토큰 꺼내 localStorage 저장 → 메인 화면
     
+----------------------------------------------------------------
+
+햄버거 메뉴버튼 클릭시 첨부된 이미지처럼  saffronLeft 부분에 조회될수 있도록 하고 
+좌우로 접었다 펼칠수 있도록 구현
+메뉴를 클릭하면 메뉴정보에 있는 url로 saffronMain화면에서 지금처럼 나올수 있도록 구현 
+필요하다면 SaffronLeft.jsx, SaffronMain.jsx 파일을 삭제하거나 합쳐도 됨
+
+http://localhost:8080/portal/roles/user-menus/${userId} endpoint를 이용하여 조회된 메뉴를 
+사용자가 메인화면에 접속하면 보여주도록 수정해줘
+
+-----------------------------------------------------
+
+1. 공지사항 CRUD 화면 구현
+  backend endpoint
+   │ POST   │ /portal/notices/list              │ 공지 목록 조회 (title/noticeType/useYn 검색) — content 제외, 상단고정 우선 + 최신순 │
+   │ GET    │ /portal/notices/{noticeId}        │ 공지 상세 + viewCount 자동 증가 
+   │ POST   │ /portal/notices/save              │ 공지등록 
+   │ POST   │ /portal/notices/update            │ 공지수정
+   │ POST   │ /portal/notices/delete/{noticeId} │ 공지삭제
+   │ GET    │ /portal/notices/next-id           │ 다음 noticeId 채번 (NT0000001 형식)
+  
+2. 사용자 메뉴권한과 관계없이 메뉴 하단에 "공지사항" 메뉴가 보이도록 구현 - /portal/notices/list
+   - 공지사항 메뉴명은 DB에서 가져오지 않음
+   - page navigation 기능 구현
+   - 제목,내용 검색기능 Grid 상단 오른쪽에 구현
+3. 기본적으로 List는 프로그램관리처럼 Tree 구조는 아님
+4. List Row별로 수정/삭제 기능은 없음
+5. List Row를 클릭하면 View화면으로 이동 
+6. View화면에서 접속한 사용자가 관리자가 아니면 컬럼값이 Text로 표현되도록 구현
+   - 관리자이면 각 항목이 input/selectbox로 수정가능해야됨
+   - 관리자이면 화면 상단 오른쪽에 [저장][삭제] 버튼이 있어야 되고 저장, 삭제 기능 구현  
+   - 수정/삭제하면 List로 이동

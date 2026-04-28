@@ -77,6 +77,14 @@ const apiUri = {
     detail: (key) => `${portal}/portal/envSetting/${key}`,
     update: (key) => `${portal}/portal/envSetting/${key}`,
   },
+  notice: {
+    list:   ()   => `${portal}/portal/notices/list`,
+    detail: (id) => `${portal}/portal/notices/${id}`,
+    create: ()   => `${portal}/portal/notices/save`,
+    update: ()   => `${portal}/portal/notices/update`,
+    delete: (id) => `${portal}/portal/notices/delete/${id}`,
+    nextId: ()   => `${portal}/portal/notices/next-id`,
+  },
 }
 
 export default apiUri

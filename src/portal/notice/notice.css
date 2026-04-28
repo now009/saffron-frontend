@@ -1,0 +1,98 @@
+.notice-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px 24px;
+  background: #ffffff;
+  border: 1px solid #e2e6ea;
+  border-radius: 10px;
+}
+
+.notice-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+}
+
+.notice-row > label {
+  flex-shrink: 0;
+  width: 90px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #4b5563;
+}
+
+.notice-row > input,
+.notice-row > select,
+.notice-row > textarea {
+  flex: 1;
+  min-width: 0;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 0.88rem;
+  color: #1e2530;
+  background: #ffffff;
+  outline: none;
+  transition: border-color 0.12s;
+  font-family: inherit;
+}
+
+.notice-row > input[readonly] {
+  background: #f9fafb;
+  color: #9ca3af;
+  cursor: default;
+}
+
+.notice-row > input:focus,
+.notice-row > select:focus,
+.notice-row > textarea:focus {
+  border-color: #4f7ef8;
+}
+
+.notice-row > textarea {
+  resize: vertical;
+  min-height: 180px;
+}
+
+.notice-row-multi {
+  align-items: flex-start;
+}
+
+.notice-row-multi > label {
+  margin-top: 8px;
+}
+
+.notice-row-group {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.notice-row-group .notice-row {
+  flex: 1;
+  min-width: 220px;
+}
+
+.notice-text {
+  flex: 1;
+  font-size: 0.9rem;
+  color: #1e2530;
+  padding: 8px 0;
+}
+
+.notice-text-multi {
+  flex: 1;
+  font-family: inherit;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-size: 0.9rem;
+  color: #1e2530;
+  background: #f9fafb;
+  border: 1px solid #e2e6ea;
+  border-radius: 6px;
+  padding: 12px 14px;
+  margin: 0;
+  min-height: 180px;
+}
