@@ -97,6 +97,12 @@ user_info ( 사용자정보 ) table
 - grid왼쪽에 input box, "메뉴아이디","메뉴명" select box를 만들고 "Search"아이콘을 만들어 조회
 - grid하단에 10개 row단위로 page navigation을 구현해줘
 
+---------------------------------------------------------------------
+권한설정 roleSetting.jsx에서 
+  - 소속사용자, 소속부서명을 사용자, 부서로 변경        
+  - 두개의 Tab화면을 구현해줘
+
+
 
 -- menu
 menu_info ( 메뉴정보 ) 

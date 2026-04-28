@@ -43,16 +43,17 @@ function SaffronMain() {
   return (
     <main className="main-content">
       <Routes>
-        <Route path="/" element={<Dashboard />} />
-        <Route path="/user/user" element={<User />} />
-        <Route path="/user/dept" element={<Dept />} />
-        <Route path="/menu/program" element={<Program />} />
-        <Route path="/menu/menu" element={<Menu />} />
-        <Route path="/role/role" element={<Role />} />
-        <Route path="/role/roleSetting" element={<RoleSetting />} />
-        <Route path="/system/code" element={<Code />} />
-        <Route path="/system/schedule" element={<Schedule />} />
-        <Route path="/system/envSetting" element={<EnvSetting />} />
+        <Route path="/"                  element={<Dashboard />} />
+        <Route path="/user/list"         element={<User />} />
+        <Route path="/user/dept/list"    element={<Dept />} />
+        <Route path="/portal/menus/list" element={<Menu />} />
+        <Route path="/system/code/list"  element={<Code />} />
+        <Route path="/system/role/list"  element={<Role />} />
+        {/* DB에 추가 후 programUrl에 맞춰 path 조정 */}
+        <Route path="/portal/programs/list"     element={<Program />} />
+        <Route path="/system/role-setting/list" element={<RoleSetting />} />
+        <Route path="/system/schedule/list"     element={<Schedule />} />
+        <Route path="/system/env-setting/list"  element={<EnvSetting />} />
       </Routes>
     </main>
   )

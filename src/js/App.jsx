@@ -1,12 +1,10 @@
 import { useState } from 'react'
 import '../css/App.css'
-import saffronLogo from '../images/saffron-logo.svg'
-import darkBg from '../images/dark-bg.svg'
 import serverConfig from '../config/serverConfig.js'
 import apiUri from '../api/apiUri.js'
 
 function App() {
-  const [userId, setUserId] = useState('admin')
+  const [userId, setUserId] = useState('now009')
   const [password, setPassword] = useState('1234!')
   const [error, setError] = useState('')
 
@@ -20,10 +18,10 @@ function App() {
   }
 
   return (
-    <div className="container" style={{ backgroundImage: `url(${darkBg})` }}>
+    <div className="container">
       <div className="content">
-        <img src={saffronLogo} alt="Saffron Front" className="logo" />
-        <h1 className="title">Saffron Front</h1>
+        <h1 className="brand">Saffron</h1>
+        <p className="subtitle">Portal Login</p>
 
         <form
           className="login-form"

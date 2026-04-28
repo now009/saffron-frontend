@@ -1,34 +1,96 @@
+import { useState, useEffect, useMemo } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import '../common/css/SaffronLeft.css'
-import { MENU_CONFIG, PATH_TO_MENU } from './menuConfig.js'
 
-function SaffronLeft() {
+function ChevronIcon({ open }) {
+  return (
+    <svg className={`chev ${open ? 'open' : ''}`} viewBox="0 0 24 24" fill="currentColor">
+      <path d="M7 10l5 5 5-5z" />
+    </svg>
+  )
+}
+
+const sortFn = (a, b) =>
+  (a.sortOrder ?? 0) - (b.sortOrder ?? 0) ||
+  String(a.menuId ?? '').localeCompare(String(b.menuId ?? ''))
+
+function SaffronLeft({ open, menus }) {
   const location = useLocation()
-  const pathKey = location.pathname.split('/')[1]
-  const activeMenuLabel = PATH_TO_MENU[pathKey] || ''
-  const config = MENU_CONFIG[activeMenuLabel]
-  const submenus = config?.submenus ?? []
+
+  const { roots, childrenByParent } = useMemo(() => {
+    const list = menus ?? []
+    const childMap = new Map()
+    const rootList = []
+    for (const m of list) {
+      if (m.parentMenuId) {
+        const arr = childMap.get(m.parentMenuId) ?? []
+        arr.push(m)
+        childMap.set(m.parentMenuId, arr)
+      } else {
+        rootList.push(m)
+      }
+    }
+    rootList.sort(sortFn)
+    for (const arr of childMap.values()) arr.sort(sortFn)
+    return { roots: rootList, childrenByParent: childMap }
+  }, [menus])
+
+  const [expanded, setExpanded] = useState(new Set())
+
+  useEffect(() => {
+    setExpanded(new Set(roots.map((r) => r.menuId)))
+  }, [roots])
+
+  const toggleSection = (menuId) => {
+    setExpanded((prev) => {
+      const next = new Set(prev)
+      if (next.has(menuId)) next.delete(menuId)
+      else next.add(menuId)
+      return next
+    })
+  }
 
   return (
-    <aside className="left-sidebar">
-      {activeMenuLabel ? (
-        <>
-          <div className="sidebar-title">{activeMenuLabel}</div>
-          <ul className="submenu-list">
-            {submenus.map((sub) => (
-              <li
-                key={sub.path}
-                className={`submenu-item ${location.pathname === sub.path ? 'active' : ''}`}
-              >
-                <span className="submenu-dot" />
-                <Link to={sub.path}>{sub.label}</Link>
-              </li>
-            ))}
-          </ul>
-        </>
-      ) : (
-        <div className="sidebar-empty">메뉴를 선택하세요</div>
-      )}
+    <aside className={`left-sidebar ${open ? '' : 'collapsed'}`}>
+      <div className="sidebar-inner">
+        {roots.length === 0 ? (
+          <div className="sidebar-empty">접근 가능한 메뉴가 없습니다.</div>
+        ) : (
+          roots.map((root) => {
+            const isOpen   = expanded.has(root.menuId)
+            const children = childrenByParent.get(root.menuId) ?? []
+            return (
+              <div key={root.menuId} className="sidebar-section">
+                <button
+                  className="sidebar-section-header"
+                  onClick={() => toggleSection(root.menuId)}
+                >
+                  <span>{root.menuName}</span>
+                  <ChevronIcon open={isOpen} />
+                </button>
+                {isOpen && (
+                  <ul className="sidebar-submenu">
+                    {children.length === 0 ? (
+                      <li className="sidebar-empty-sub">하위 메뉴 없음</li>
+                    ) : children.map((c) => (
+                      <li
+                        key={c.menuId}
+                        className={`sidebar-item ${location.pathname === c.programUrl ? 'active' : ''}`}
+                      >
+                        {c.programUrl ? (
+                          <Link to={c.programUrl}>{c.menuName}</Link>
+                        ) : (
+                          <span className="sidebar-item-disabled">{c.menuName}</span>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            )
+          })
+        )}
+      </div>
     </aside>
   )
 }

@@ -17,41 +17,37 @@
 .top-left {
   display: flex;
   align-items: center;
-  gap: 32px;
+  gap: 16px;
+}
+
+.menu-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: none;
+  border: 1px solid #e2e6ea;
+  border-radius: 8px;
+  color: #4b5563;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.menu-btn:hover {
+  background: #eef2ff;
+  border-color: #4f7ef8;
+  color: #4f7ef8;
+}
+
+.menu-btn svg {
+  width: 20px;
+  height: 20px;
 }
 
 .portal-logo {
   height: 32px;
   width: auto;
-}
-
-.top-nav {
-  display: flex;
-  gap: 4px;
-}
-
-.nav-item {
-  padding: 8px 18px;
-  background: none;
-  border: none;
-  border-radius: 8px;
-  color: #4b5563;
-  font-size: 0.9rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background 0.15s, color 0.15s;
-  letter-spacing: 0.3px;
-}
-
-.nav-item:hover {
-  background: #eef2ff;
-  color: #4f7ef8;
-}
-
-.nav-item.active {
-  background: #eef2ff;
-  color: #4f7ef8;
-  font-weight: 600;
 }
 
 .top-right {

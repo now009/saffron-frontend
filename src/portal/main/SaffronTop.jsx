@@ -1,52 +1,29 @@
-import { useNavigate, useLocation } from 'react-router-dom'
 import '../common/css/SaffronTop.css'
 import portalLogo from '../images/portal-logo.svg'
 import serverConfig from '../../config/serverConfig.js'
-import { MENUS, MENU_CONFIG, PATH_TO_MENU } from './menuConfig.js'
 
-function SaffronTop() {
-  const navigate = useNavigate()
-  const location = useLocation()
-
-  const pathKey = location.pathname.split('/')[1]
-  const activeMenu = PATH_TO_MENU[pathKey] || ''
+function SaffronTop({ onToggleSidebar }) {
+  const user = serverConfig.token.payload()
+  const displayName = user?.userName || user?.userId || user?.sub || 'User'
 
   const handleLogout = () => {
     serverConfig.token.remove()
     window.location.href = '/'
   }
 
-  const handleMenuClick = (menu) => {
-    const config = MENU_CONFIG[menu]
-    if (config?.submenus.length > 0) {
-      navigate(config.submenus[0].path)
-    }
-  }
-
   return (
     <header className="top-header">
       <div className="top-left">
+        <button className="menu-btn" onClick={onToggleSidebar} title="메뉴">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/>
+          </svg>
+        </button>
         <img src={portalLogo} alt="Saffron Portal" className="portal-logo" />
-        <nav className="top-nav">
-          {MENUS.map((menu) => (
-            <button
-              key={menu}
-              className={`nav-item ${activeMenu === menu ? 'active' : ''}`}
-              onClick={() => handleMenuClick(menu)}
-            >
-              {menu}
-            </button>
-          ))}
-        </nav>
       </div>
       <div className="top-right">
         <div className="user-info">
-          <div className="user-icon">
-            <svg viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
-            </svg>
-          </div>
-          <span className="user-label">User</span>
+          <span className="user-label" title={user?.email}>{displayName}</span>
         </div>
         <button className="logout-btn" onClick={handleLogout} title="로그아웃">
           <svg viewBox="0 0 24 24" fill="currentColor">
