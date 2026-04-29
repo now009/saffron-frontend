@@ -32,8 +32,20 @@ function CellValue({ colKey, value }) {
 }
 
 function ActionMenu({ row, onEdit, onDelete }) {
-  const [open, setOpen] = useState(false)
-  const ref = useRef(null)
+  const [open, setOpen]     = useState(false)
+  const [openUp, setOpenUp] = useState(false)
+  const ref    = useRef(null)
+  const btnRef = useRef(null)
+
+  const toggle = () => {
+    if (!open && btnRef.current) {
+      const wrap = btnRef.current.closest('.grid-wrap')
+      const bottom    = wrap ? wrap.getBoundingClientRect().bottom : window.innerHeight
+      const btnBottom = btnRef.current.getBoundingClientRect().bottom
+      setOpenUp(bottom - btnBottom < 110)
+    }
+    setOpen((v) => !v)
+  }
 
   useEffect(() => {
     if (!open) return
@@ -44,11 +56,11 @@ function ActionMenu({ row, onEdit, onDelete }) {
 
   return (
     <div className="action-menu" ref={ref}>
-      <button className="action-btn" onClick={() => setOpen((v) => !v)}>
+      <button ref={btnRef} className="action-btn" onClick={toggle}>
         <svg viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
       </button>
       {open && (
-        <div className="action-dropdown">
+        <div className={`action-dropdown ${openUp ? 'up' : ''}`}>
           <button className="action-item edit" onClick={() => { onEdit(row); setOpen(false) }}>수정</button>
           <button className="action-item delete" onClick={() => { onDelete(row); setOpen(false) }}>삭제</button>
         </div>

@@ -649,3 +649,4 @@ http://localhost:8080/portal/roles/user-menus/${userId} endpoint를 이용하여
    - 관리자이면 각 항목이 input/selectbox로 수정가능해야됨
    - 관리자이면 화면 상단 오른쪽에 [저장][삭제] 버튼이 있어야 되고 저장, 삭제 기능 구현  
    - 수정/삭제하면 List로 이동
+- portal 폴더아래 notice 폴더 생성후 notice.jsx 파일생성후 구현   

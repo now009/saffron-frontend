@@ -114,6 +114,8 @@
   overflow-y: visible;
   border-radius: 10px;
   border: 1px solid #e2e6ea;
+  padding-bottom: 10px;
+  padding-right: 20px;
 }
 
 table.grid-table {
@@ -332,6 +334,12 @@ table.grid-table {
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
   overflow: hidden;
   min-width: 90px;
+}
+
+.action-dropdown.up {
+  top: auto;
+  bottom: calc(100% + 4px);
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.12);
 }
 
 .action-item {

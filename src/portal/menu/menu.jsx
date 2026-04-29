@@ -41,8 +41,20 @@ function CellValue({ colKey, value }) {
 }
 
 function ActionMenu({ row, onEdit, onDelete }) {
-  const [open, setOpen] = useState(false)
-  const ref = useRef(null)
+  const [open, setOpen]     = useState(false)
+  const [openUp, setOpenUp] = useState(false)
+  const ref    = useRef(null)
+  const btnRef = useRef(null)
+
+  const toggle = () => {
+    if (!open && btnRef.current) {
+      const wrap = btnRef.current.closest('.grid-wrap')
+      const bottom    = wrap ? wrap.getBoundingClientRect().bottom : window.innerHeight
+      const btnBottom = btnRef.current.getBoundingClientRect().bottom
+      setOpenUp(bottom - btnBottom < 110)
+    }
+    setOpen((v) => !v)
+  }
 
   useEffect(() => {
     if (!open) return
@@ -53,11 +65,11 @@ function ActionMenu({ row, onEdit, onDelete }) {
 
   return (
     <div className="action-menu" ref={ref}>
-      <button className="action-btn" onClick={() => setOpen((v) => !v)}>
+      <button ref={btnRef} className="action-btn" onClick={toggle}>
         <svg viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
       </button>
       {open && (
-        <div className="action-dropdown">
+        <div className={`action-dropdown ${openUp ? 'up' : ''}`}>
           <button className="action-item edit" onClick={() => { onEdit(row); setOpen(false) }}>수정</button>
           <button className="action-item delete" onClick={() => { onDelete(row); setOpen(false) }}>삭제</button>
         </div>
@@ -227,43 +239,32 @@ function MenuModal({ mode, form: initialForm, onClose, onSave }) {
             <label>메뉴명</label>
             <input value={form.menuName} onChange={(e) => set('menuName', e.target.value)} placeholder="메뉴명" />
           </div>
-          {!isEdit && (
-            <div className="modal-field-row">
-              <div className="modal-field modal-field-v">
-                <label>메뉴 레벨</label>
-                <select value={form.menuLevel} onChange={(e) => set('menuLevel', Number(e.target.value))}>
-                  <option value={1}>1</option>
-                  <option value={2}>2</option>
-                  <option value={3}>3</option>
-                </select>
-              </div>
-              <div className="modal-field modal-field-v">
-                <label>정렬 순서</label>
-                <input
-                  type="number"
-                  min={1}
-                  value={form.sortOrder}
-                  onChange={(e) => set('sortOrder', e.target.value.replace(/\D/g, '') === '' ? 1 : Number(e.target.value.replace(/\D/g, '')))}
-                />
-              </div>
-              <div className="modal-field modal-field-v">
-                <label>디렉토리 여부</label>
-                <select value={form.menuDirYn ?? 'N'} onChange={(e) => set('menuDirYn', e.target.value)}>
-                  <option value="Y">Y</option>
-                  <option value="N">N</option>
-                </select>
-              </div>
+          <div className="modal-field-row">
+            <div className="modal-field modal-field-v">
+              <label>메뉴 레벨</label>
+              <select value={form.menuLevel} onChange={(e) => set('menuLevel', Number(e.target.value))}>
+                <option value={1}>1</option>
+                <option value={2}>2</option>
+                <option value={3}>3</option>
+              </select>
             </div>
-          )}
-          {isEdit && (
-            <div className="modal-field">
+            <div className="modal-field modal-field-v">
+              <label>정렬 순서</label>
+              <input
+                type="number"
+                min={1}
+                value={form.sortOrder}
+                onChange={(e) => set('sortOrder', e.target.value.replace(/\D/g, '') === '' ? 1 : Number(e.target.value.replace(/\D/g, '')))}
+              />
+            </div>
+            <div className="modal-field modal-field-v">
               <label>디렉토리 여부</label>
               <select value={form.menuDirYn ?? 'N'} onChange={(e) => set('menuDirYn', e.target.value)}>
                 <option value="Y">Y</option>
                 <option value="N">N</option>
               </select>
             </div>
-          )}
+          </div>
           <div className="modal-field">
             <label>프로그램 ID</label>
             <div className="modal-input-row">
@@ -381,7 +382,16 @@ function Menu() {
   const handleEdit = (row) => {
     setModal({
       mode: 'edit',
-      form: { menuId: row.menuId ?? '', menuName: row.menuName ?? '', menuDirYn: row.menuDirYn ?? 'N', programId: row.programId ?? '', programUrl: row.programUrl ?? '', useYn: row.useYn ?? 'Y' },
+      form: {
+        menuId:    row.menuId    ?? '',
+        menuName:  row.menuName  ?? '',
+        menuLevel: row.menuLevel ?? 1,
+        sortOrder: row.sortOrder ?? 1,
+        menuDirYn: row.menuDirYn ?? 'N',
+        programId: row.programId ?? '',
+        programUrl: row.programUrl ?? '',
+        useYn:     row.useYn     ?? 'Y',
+      },
     })
   }
 
