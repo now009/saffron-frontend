@@ -15,6 +15,8 @@ function App() {
       return
     }
     setError('')
+    // 유효성 통과 시 form이 Auth 서버로 네이티브 submit
+    // Auth(8090) → redirect → Backend(8080)/main → redirect → Frontend(8000)/main
   }
 
   return (
