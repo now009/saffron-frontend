@@ -206,12 +206,18 @@ POST http://localhost:8080/portal/menus/update
   "menuId": "MENU001",
   "menuName": "시스템관리",
   "programId": "PRG001",
+  "menuLevel": 1,
+  "sortOrder": 3,
   "useYn": "Y"
 }
   전달하고 저장성공시 Modal화면 종료후 list 조회
 
 메뉴저장, 수정 실행시 Fail발생하면 메세지 alert띄고 Modal은 그대로 놔둘것  
 
+메뉴수정Modal을 등록처럼 menuLevl, sortOrder를 추가해줘 
+- 60px로 줄이면 드롭다운이 나오는데 옆에 scrollbar가 같이나와
+  scrollbar가 나오지 않도록 드롭다운 우측공간을 여유롭게 추가하는게 어떻한가
+- 마지막 row두개는 하단의 scrollbar에 영향받지 않게 위쪽으로 펼쳐지도록 해줘  
 
 -- 메뉴입력/수정 Modal에 
    - 프로그램 ID 아래에 프로그램 URL을 추가해주고

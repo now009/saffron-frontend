@@ -11,6 +11,10 @@ import Schedule from '../system/schedule.jsx'
 import EnvSetting from '../system/envSetting.jsx'
 import Notice from '../notice/notice.jsx'
 import NoticeView from '../notice/noticeView.jsx'
+import Board from '../board/board.jsx'
+import Post from '../board/post.jsx'
+import PostView from '../board/postView.jsx'
+import PostEdit from '../board/postEdit.jsx'
 
 function Dashboard() {
   return (
@@ -59,6 +63,11 @@ function SaffronMain() {
         <Route path="/portal/notices/list"      element={<Notice />} />
         <Route path="/portal/notices/new"       element={<NoticeView />} />
         <Route path="/portal/notices/:noticeId" element={<NoticeView />} />
+        <Route path="/portal/boards/list"             element={<Board />} />
+        <Route path="/board/boards/posts/:boardId"    element={<Post />} />
+        <Route path="/board/:boardId/write"           element={<PostEdit />} />
+        <Route path="/board/:boardId/write/:postId"   element={<PostEdit />} />
+        <Route path="/board/:boardId/:postId"         element={<PostView />} />
       </Routes>
     </main>
   )

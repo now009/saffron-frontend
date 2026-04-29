@@ -1,0 +1,394 @@
+/* 게시판 설명 */
+.board-desc {
+  font-size: 0.85rem;
+  color: #6b7280;
+  padding: 4px 4px 8px;
+}
+
+/* 게시글 목록 추가 표기 */
+.post-title {
+  color: #1e2530;
+}
+.post-title.pinned {
+  font-weight: 700;
+}
+.post-reply {
+  color: #94a3b8;
+  margin-right: 2px;
+}
+.post-icon-secret {
+  margin-right: 4px;
+}
+.post-attach-mark {
+  color: #6b7280;
+  margin-left: 6px;
+  font-size: 0.85rem;
+}
+.post-new-badge {
+  display: inline-block;
+  margin-left: 6px;
+  background: #dc2626;
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 3px;
+  vertical-align: middle;
+}
+.post-comment-count {
+  color: #4f7ef8;
+  font-weight: 600;
+  margin-left: 6px;
+  font-size: 0.85rem;
+}
+
+/* 게시글 상세 */
+.post-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 14px 18px;
+  background: #f5f7ff;
+  border: 1px solid #e2e6ea;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  color: #4b5563;
+}
+.post-meta strong {
+  color: #6b7280;
+  font-weight: 600;
+  margin-right: 4px;
+}
+
+.post-content {
+  padding: 24px 20px;
+  background: #ffffff;
+  border: 1px solid #e2e6ea;
+  border-radius: 10px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-size: 0.95rem;
+  color: #1e2530;
+  min-height: 200px;
+  line-height: 1.7;
+}
+
+.post-files {
+  background: #ffffff;
+  border: 1px solid #e2e6ea;
+  border-radius: 10px;
+  padding: 14px 18px;
+}
+.post-files-title {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #1e2530;
+  margin-bottom: 8px;
+}
+.post-file-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  background: #f9fafb;
+  border: 1px solid #e2e6ea;
+  border-radius: 6px;
+  padding: 8px 12px;
+  margin-bottom: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: #374151;
+  transition: background 0.12s, border-color 0.12s;
+}
+.post-file-item:last-child { margin-bottom: 0; }
+.post-file-item:hover {
+  background: #eef2ff;
+  border-color: #4f7ef8;
+  color: #4f7ef8;
+}
+.post-file-name {
+  text-align: left;
+  flex: 1;
+}
+.post-file-size {
+  color: #9ca3af;
+  font-size: 0.78rem;
+  flex-shrink: 0;
+  margin-left: 12px;
+}
+
+.post-like-bar {
+  display: flex;
+  justify-content: center;
+  padding: 8px 0;
+}
+.post-like-btn {
+  background: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: 24px;
+  padding: 10px 28px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #6b7280;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.post-like-btn:hover {
+  background: #fef2f2;
+  border-color: #dc2626;
+  color: #dc2626;
+}
+.post-like-btn.on {
+  background: #dc2626;
+  border-color: #dc2626;
+  color: #ffffff;
+}
+
+/* 댓글 */
+.comments-section {
+  background: #ffffff;
+  border: 1px solid #e2e6ea;
+  border-radius: 10px;
+  padding: 16px 18px;
+}
+.comments-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #1e2530;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #f0f2f7;
+}
+.comments-empty {
+  padding: 24px 0;
+  text-align: center;
+  color: #9ca3af;
+  font-size: 0.88rem;
+}
+
+.comment-item {
+  padding: 12px 0;
+  border-bottom: 1px solid #f0f2f7;
+}
+.comment-item:last-child { border-bottom: none; }
+.comment-item.reply {
+  margin-left: 32px;
+  padding-left: 12px;
+  border-left: 2px solid #e2e6ea;
+}
+
+.comment-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.82rem;
+  margin-bottom: 6px;
+}
+.comment-user {
+  font-weight: 600;
+  color: #1e2530;
+}
+.comment-date {
+  color: #9ca3af;
+  font-size: 0.78rem;
+}
+.comment-actions {
+  margin-left: auto;
+  display: flex;
+  gap: 4px;
+}
+.comment-action {
+  background: none;
+  border: none;
+  color: #6b7280;
+  font-size: 0.78rem;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+.comment-action:hover {
+  background: #eef2ff;
+  color: #4f7ef8;
+}
+.comment-action.danger:hover {
+  background: #fef2f2;
+  color: #dc2626;
+}
+.comment-like {
+  background: none;
+  border: 1px solid #e2e6ea;
+  border-radius: 12px;
+  padding: 2px 10px;
+  font-size: 0.75rem;
+  color: #6b7280;
+  cursor: pointer;
+}
+.comment-like.on {
+  background: #fef2f2;
+  border-color: #dc2626;
+  color: #dc2626;
+}
+
+.comment-body {
+  font-size: 0.88rem;
+  color: #374151;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.comment-edit-row textarea,
+.reply-input textarea,
+.comment-write textarea {
+  width: 100%;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 0.88rem;
+  font-family: inherit;
+  outline: none;
+  resize: vertical;
+}
+.comment-edit-row textarea:focus,
+.reply-input textarea:focus,
+.comment-write textarea:focus {
+  border-color: #4f7ef8;
+}
+.comment-edit-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-top: 6px;
+}
+.reply-input {
+  margin-left: 32px;
+  padding: 8px 0 8px 12px;
+  border-left: 2px solid #4f7ef8;
+}
+.comment-write {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid #f0f2f7;
+}
+.comment-write .modal-btn-save {
+  align-self: flex-end;
+}
+
+/* 글쓰기/수정 폼 */
+.post-edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background: #ffffff;
+  border: 1px solid #e2e6ea;
+  border-radius: 10px;
+  padding: 20px 24px;
+}
+
+.post-edit-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+}
+.post-edit-row > label {
+  flex-shrink: 0;
+  width: 80px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #4b5563;
+}
+.post-edit-row > input,
+.post-edit-row > textarea,
+.post-edit-row > select {
+  flex: 1;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 0.9rem;
+  outline: none;
+  font-family: inherit;
+}
+.post-edit-row > textarea {
+  min-height: 280px;
+  resize: vertical;
+}
+.post-edit-row-multi { align-items: flex-start; }
+.post-edit-row-multi > label { margin-top: 8px; }
+
+.post-edit-row-group {
+  display: flex;
+  gap: 16px;
+}
+.post-edit-row-group > .post-edit-row {
+  flex: 1;
+}
+
+.post-edit-options {
+  display: flex;
+  gap: 18px;
+  padding-left: 92px;
+}
+.post-check {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.88rem;
+  color: #4b5563;
+  cursor: pointer;
+}
+
+.post-attach {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.post-attach-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.post-attach-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #f9fafb;
+  border: 1px solid #e2e6ea;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 0.82rem;
+  color: #4b5563;
+}
+.post-attach-item.new {
+  background: #eef2ff;
+  border-color: #4f7ef8;
+  color: #4f7ef8;
+}
+.post-attach-remove {
+  background: none;
+  border: none;
+  color: #9ca3af;
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+}
+.post-attach-remove:hover {
+  color: #dc2626;
+}
+.post-attach-add {
+  align-self: flex-start;
+  background: #ffffff;
+  border: 1px dashed #d1d5db;
+  border-radius: 6px;
+  padding: 8px 14px;
+  font-size: 0.85rem;
+  color: #6b7280;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+}
+.post-attach-add:hover {
+  background: #eef2ff;
+  border-color: #4f7ef8;
+  color: #4f7ef8;
+}

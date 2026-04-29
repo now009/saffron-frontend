@@ -85,6 +85,41 @@ const apiUri = {
     delete: (id) => `${portal}/portal/notices/delete/${id}`,
     nextId: ()   => `${portal}/portal/notices/next-id`,
   },
+  board: {
+    list:    ()   => `${portal}/portal/boards/list`,
+    detail:  (id) => `${portal}/portal/boards/${id}`,
+    create:  ()   => `${portal}/portal/boards/save`,
+    update:  ()   => `${portal}/portal/boards/update`,
+    delete:  (id) => `${portal}/portal/boards/delete/${id}`,
+    nextId:  ()   => `${portal}/portal/boards/next-id`,
+    stats:   ()   => `${portal}/portal/boards/stats`,
+  },
+  post: {
+    list:    ()                     => `${portal}/portal/boards/posts/list`,
+    detail:  (id, currentUser)      => `${portal}/portal/boards/posts/${id}${currentUser ? `?currentUser=${encodeURIComponent(currentUser)}` : ''}`,
+    create:  ()                     => `${portal}/portal/boards/posts/save`,
+    update:  ()                     => `${portal}/portal/boards/posts/update`,
+    delete:  (id)                   => `${portal}/portal/boards/posts/delete/${id}`,
+    nextId:  ()                     => `${portal}/portal/boards/posts/next-id`,
+    topLikes:(boardId, limit = 5)   => `${portal}/portal/boards/posts/top-likes?${boardId ? `boardId=${encodeURIComponent(boardId)}&` : ''}limit=${limit}`,
+  },
+  boardFile: {
+    byPost:   (postId) => `${portal}/portal/boards/files/post/${postId}`,
+    upload:   ()       => `${portal}/portal/boards/files/upload`,
+    delete:   (id)     => `${portal}/portal/boards/files/delete/${id}`,
+    download: (id)     => `${portal}/portal/boards/files/download/${id}`,
+  },
+  comment: {
+    list:   ()   => `${portal}/portal/boards/comments/list`,
+    create: ()   => `${portal}/portal/boards/comments/save`,
+    update: ()   => `${portal}/portal/boards/comments/update`,
+    delete: (id) => `${portal}/portal/boards/comments/delete/${id}`,
+    nextId: ()   => `${portal}/portal/boards/comments/next-id`,
+  },
+  like: {
+    check:  () => `${portal}/portal/boards/likes/check`,
+    toggle: () => `${portal}/portal/boards/likes/toggle`,
+  },
 }
 
 export default apiUri

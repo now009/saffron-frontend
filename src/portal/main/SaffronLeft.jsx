@@ -51,6 +51,7 @@ function SaffronLeft({ open, menus }) {
   }
 
   const noticeActive = location.pathname.startsWith('/portal/notices')
+  const boardActive  = location.pathname.startsWith('/board/') || location.pathname.startsWith('/portal/boards')
 
   return (
     <aside className={`left-sidebar ${open ? '' : 'collapsed'}`}>
@@ -95,6 +96,12 @@ function SaffronLeft({ open, menus }) {
           )}
         </div>
         <div className="sidebar-pinned">
+          <Link
+            to="/portal/boards/list"
+            className={`sidebar-pinned-item ${boardActive ? 'active' : ''}`}
+          >
+            게시판
+          </Link>
           <Link
             to="/portal/notices/list"
             className={`sidebar-pinned-item ${noticeActive ? 'active' : ''}`}
