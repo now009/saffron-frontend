@@ -19,6 +19,7 @@ import Board from '../board/board.jsx'
 import Post from '../board/post.jsx'
 import PostView from '../board/postView.jsx'
 import PostEdit from '../board/postEdit.jsx'
+import EaiMain from '../../eai/eaiMain.jsx'
 
 const TYPE_LABEL = { NORMAL: '일반', IMPORTANT: '중요', POPUP: '팝업' }
 const TYPE_BADGE = { NORMAL: 'off', IMPORTANT: 'level1', POPUP: 'level2' }
@@ -117,6 +118,7 @@ function PortalMain() {
     <main className="main-content">
       <Routes>
         <Route path="/portal"                    element={<PortalDashboard />} />
+        <Route path="/eai"                       element={<EaiMain />} />
         <Route path="/portal/users/list"         element={<User />} />
         <Route path="/portal/depts/list"         element={<Dept />} />
         <Route path="/portal/menus/list"         element={<Menu />} />
