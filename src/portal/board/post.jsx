@@ -124,7 +124,7 @@ function Post() {
               </div>
               <button className="grid-add-btn" onClick={() => navigate('/portal/boards/list')}>← 게시판 목록</button>
               {writable && (
-                <button className="grid-add-btn" onClick={() => navigate(`/board/${boardId}/write`)}>+ 글쓰기</button>
+                <button className="grid-add-btn" onClick={() => navigate(`/portal/boards/${boardId}/write`)}>+ 글쓰기</button>
               )}
             </div>
           </div>
@@ -163,7 +163,7 @@ function Post() {
                 ) : pageRows.map((row, i) => {
                   const idx = (page - 1) * PAGE_SIZE + i + 1
                   return (
-                    <tr key={row.postId} onClick={() => navigate(`/board/${boardId}/${row.postId}`)}>
+                    <tr key={row.postId} onClick={() => navigate(`/portal/boards/${boardId}/${row.postId}`)}>
                       <td style={{ textAlign: 'center' }}>
                         {row.isPinned === 'Y' ? (
                           <span className="grid-badge admin">고정</span>

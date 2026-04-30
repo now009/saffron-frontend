@@ -205,7 +205,7 @@ function PostView() {
     })
     const data = await res.json().catch(() => ({}))
     if (data.messageCode === 'fail') { alert(data.message); return }
-    navigate(`/board/boards/posts/${boardId}`)
+    navigate(`/portal/boards/posts/${boardId}`)
   }
 
   const handleDownload = async (f) => {
@@ -267,10 +267,10 @@ function PostView() {
           <div className="grid-toolbar">
             <span className="grid-title">{post.title}</span>
             <div className="grid-toolbar-right">
-              <button className="grid-add-btn" onClick={() => navigate(`/board/boards/posts/${boardId}`)}>← 목록</button>
+              <button className="grid-add-btn" onClick={() => navigate(`/portal/boards/posts/${boardId}`)}>← 목록</button>
               {canModify && (
                 <>
-                  <button className="modal-btn-save" onClick={() => navigate(`/board/${boardId}/write/${postId}`)}>수정</button>
+                  <button className="modal-btn-save" onClick={() => navigate(`/portal/boards/${boardId}/write/${postId}`)}>수정</button>
                   <button className="modal-btn-cancel" onClick={handleDeletePost}>삭제</button>
                 </>
               )}

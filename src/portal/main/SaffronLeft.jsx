@@ -51,7 +51,7 @@ function SaffronLeft({ open, menus }) {
   }
 
   const noticeActive = location.pathname.startsWith('/portal/notices')
-  const boardActive  = location.pathname.startsWith('/board/') || location.pathname.startsWith('/portal/boards')
+  const boardActive  = location.pathname.startsWith('/portal/boards')
 
   return (
     <aside className={`left-sidebar ${open ? '' : 'collapsed'}`}>

@@ -49,25 +49,24 @@ function SaffronMain() {
   return (
     <main className="main-content">
       <Routes>
-        <Route path="/"                  element={<Dashboard />} />
-        <Route path="/user/list"         element={<User />} />
-        <Route path="/user/dept/list"    element={<Dept />} />
-        <Route path="/portal/menus/list" element={<Menu />} />
-        <Route path="/system/code/list"  element={<Code />} />
-        <Route path="/system/role/list"  element={<Role />} />
-        {/* DB에 추가 후 programUrl에 맞춰 path 조정 */}
-        <Route path="/portal/programs/list"     element={<Program />} />
-        <Route path="/system/role-setting/list" element={<RoleSetting />} />
-        <Route path="/system/schedule/list"     element={<Schedule />} />
-        <Route path="/system/env-setting/list"  element={<EnvSetting />} />
-        <Route path="/portal/notices/list"      element={<Notice />} />
-        <Route path="/portal/notices/new"       element={<NoticeView />} />
-        <Route path="/portal/notices/:noticeId" element={<NoticeView />} />
-        <Route path="/portal/boards/list"             element={<Board />} />
-        <Route path="/board/boards/posts/:boardId"    element={<Post />} />
-        <Route path="/board/:boardId/write"           element={<PostEdit />} />
-        <Route path="/board/:boardId/write/:postId"   element={<PostEdit />} />
-        <Route path="/board/:boardId/:postId"         element={<PostView />} />
+        <Route path="/"                          element={<Dashboard />} />
+        <Route path="/portal/users/list"         element={<User />} />
+        <Route path="/portal/depts/list"         element={<Dept />} />
+        <Route path="/portal/menus/list"         element={<Menu />} />
+        <Route path="/portal/programs/list"      element={<Program />} />
+        <Route path="/portal/codes/list"         element={<Code />} />
+        <Route path="/portal/roles/list"         element={<Role />} />
+        <Route path="/portal/rolesetting/list"   element={<RoleSetting />} />
+        <Route path="/portal/schedules/list"     element={<Schedule />} />
+        <Route path="/portal/env-settings/list"  element={<EnvSetting />} />
+        <Route path="/portal/notices/list"       element={<Notice />} />
+        <Route path="/portal/notices/new"        element={<NoticeView />} />
+        <Route path="/portal/notices/:noticeId"  element={<NoticeView />} />
+        <Route path="/portal/boards/list"                    element={<Board />} />
+        <Route path="/portal/boards/posts/:boardId"          element={<Post />} />
+        <Route path="/portal/boards/:boardId/write"          element={<PostEdit />} />
+        <Route path="/portal/boards/:boardId/write/:postId"  element={<PostEdit />} />
+        <Route path="/portal/boards/:boardId/:postId"        element={<PostView />} />
       </Routes>
     </main>
   )

@@ -265,7 +265,7 @@ function Board() {
   }
 
   const handleRowClick = (row) => {
-    navigate(`/board/boards/posts/${row.boardId}`)
+    navigate(`/portal/boards/posts/${row.boardId}`)
   }
 
   const totalPages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE))

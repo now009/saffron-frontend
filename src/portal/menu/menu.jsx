@@ -170,11 +170,12 @@ function MenuModal({ mode, form: initialForm, onClose, onSave }) {
   const isEdit = mode === 'edit'
 
   useEffect(() => {
-    if (isEdit) return
-    fetch(apiUri.menus.nextId(), { headers: serverConfig.token.authHeader() })
-      .then((r) => r.json())
-      .then((data) => setForm((prev) => ({ ...prev, menuId: data.menuId ?? data.nextId ?? String(data) })))
-      .catch(() => {})
+    if (!isEdit) {
+      fetch(apiUri.menus.nextId(), { headers: serverConfig.token.authHeader() })
+        .then((r) => r.json())
+        .then((data) => setForm((prev) => ({ ...prev, menuId: data.menuId ?? data.nextId ?? String(data) })))
+        .catch(() => {})
+    }
     fetch(apiUri.menus.parentMenus(), { headers: serverConfig.token.authHeader() })
       .then((r) => r.json())
       .then((data) => setParentMenus(Array.isArray(data) ? data : data.list ?? []))
@@ -222,12 +223,12 @@ function MenuModal({ mode, form: initialForm, onClose, onSave }) {
             <label>메뉴 ID</label>
             <input value={form.menuId} readOnly placeholder="조회 중..." />
           </div>
-          {!isEdit && (
+          {(!isEdit || (form.menuLevel ?? 1) <= 2) && (
             <div className="modal-field">
               <label>상위 메뉴 ID</label>
-              <select value={form.parentMenuId} onChange={(e) => handleParentChange(e.target.value)}>
+              <select value={form.parentMenuId ?? ''} onChange={(e) => handleParentChange(e.target.value)}>
                 <option value="">없음 (최상위)</option>
-                {parentMenus.map((m) => (
+                {parentMenus.filter((m) => m.menuId !== form.menuId).map((m) => (
                   <option key={m.menuId} value={m.menuId}>
                     {m.menuNameTree ?? m.menuName} ({m.menuId})
                   </option>
@@ -383,14 +384,15 @@ function Menu() {
     setModal({
       mode: 'edit',
       form: {
-        menuId:    row.menuId    ?? '',
-        menuName:  row.menuName  ?? '',
-        menuLevel: row.menuLevel ?? 1,
-        sortOrder: row.sortOrder ?? 1,
-        menuDirYn: row.menuDirYn ?? 'N',
-        programId: row.programId ?? '',
-        programUrl: row.programUrl ?? '',
-        useYn:     row.useYn     ?? 'Y',
+        menuId:       row.menuId       ?? '',
+        parentMenuId: row.parentMenuId ?? '',
+        menuName:     row.menuName     ?? '',
+        menuLevel:    row.menuLevel    ?? 1,
+        sortOrder:    row.sortOrder    ?? 1,
+        menuDirYn:    row.menuDirYn    ?? 'N',
+        programId:    row.programId    ?? '',
+        programUrl:   row.programUrl   ?? '',
+        useYn:        row.useYn        ?? 'Y',
       },
     })
   }

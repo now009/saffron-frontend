@@ -128,7 +128,7 @@ function PostEdit() {
       } catch (e) {
         alert(e.message)
       }
-      navigate(`/board/boards/posts/${boardId}`)
+      navigate(`/portal/boards/posts/${boardId}`)
     } catch (err) {
       alert(`저장 실패 (${err.message})`)
     }
