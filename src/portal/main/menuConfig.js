@@ -1,40 +1,19 @@
-export const MENUS = ['사용자', '메뉴권한', '권한관리', '시스템']
+// 상단 우측에 노출되는 정적 메뉴 (DB 메뉴와 무관)
+// adminOnly: true 인 항목은 manager 사용자에게만 보임
+export const TOP_MENUS = [
+  { label: 'Portal', path: '/portal', adminOnly: true },
+  { label: 'EAI',    path: '/eai',    adminOnly: false },
+]
 
-export const MENU_CONFIG = {
-  '사용자': {
-    pathKey: 'user',
-    submenus: [
-      { label: '사용자관리', path: '/user/user' },
-      { label: '부서관리', path: '/user/dept' },
-    ],
-  },
-  '메뉴권한': {
-    pathKey: 'menu',
-    submenus: [
-      { label: '프로그램관리', path: '/menu/program' },
-      { label: '메뉴관리', path: '/menu/menu' },
-    ],
-  },
-  '권한관리': {
-    pathKey: 'role',
-    submenus: [
-      { label: '권한정보', path: '/role/role' },
-      { label: '권한설정', path: '/role/roleSetting' },
-    ],
-  },
-  '시스템': {
-    pathKey: 'system',
-    submenus: [
-      { label: '코드관리', path: '/system/code' },
-      { label: '스케줄관리', path: '/system/schedule' },
-      { label: '환경설정관리', path: '/system/envSetting' },
-    ],
-  },
-}
-
-export const PATH_TO_MENU = {
-  user: '사용자',
-  menu: '메뉴권한',
-  role: '권한관리',
-  system: '시스템',
+// 현재 location.pathname을 받아 site 식별자 (소문자) 반환
+//   /portal/...  → 'portal'
+//   /eai/...     → 'eai'
+//   /            → null
+export const getCurrentSite = (pathname) => {
+  for (const m of TOP_MENUS) {
+    if (pathname === m.path || pathname.startsWith(m.path + '/')) {
+      return m.label.toLowerCase()
+    }
+  }
+  return null
 }

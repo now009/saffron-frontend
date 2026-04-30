@@ -230,22 +230,19 @@ function Program() {
   const handleSave = async (form) => {
     const isEdit = modal.mode === 'edit'
     try {
-      const url = isEdit ? apiUri.program.update() : apiUri.program.create()
-      const res = await fetch(url, {
+      const url  = isEdit ? apiUri.program.update() : apiUri.program.create()
+      const res  = await fetch(url, {
         method: 'POST',
         headers: { ...serverConfig.token.authHeader(), 'Content-Type': 'application/json' },
         body: JSON.stringify(form),
       })
-      const data = await res.json()
-      setModal(null)
-      if (Array.isArray(data)) {
-        setRows(data)
-        setCurrentPage(1)
-      } else if (data.messageCode === 'fail') {
-        alert(data.message)
-      } else {
-        fetchData(searchField, searchInput)
+      const data = await res.json().catch(() => ({}))
+      if (data && !Array.isArray(data) && data.messageCode === 'fail') {
+        alert(data.message ?? '저장 실패')
+        return
       }
+      setModal(null)
+      fetchData(searchField, searchInput)
     } catch (err) {
       setModal(null)
       alert(`저장 실패 (${err.message})`)

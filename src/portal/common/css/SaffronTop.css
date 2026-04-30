@@ -111,3 +111,20 @@
   font-weight: 500;
   color: #4b5563;
 }
+
+.portal-btn {
+  background: #4f7ef8;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  padding: 7px 16px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  letter-spacing: 0.3px;
+  transition: background 0.15s;
+}
+
+.portal-btn:hover {
+  background: #3b6ef0;
+}

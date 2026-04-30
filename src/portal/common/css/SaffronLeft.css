@@ -81,6 +81,30 @@
   background: #f5f7ff;
 }
 
+.sidebar-section-link {
+  display: block;
+  text-decoration: none;
+  color: #1e2530;
+}
+
+.sidebar-section-link.active {
+  background: #eef2ff;
+  color: #4f7ef8;
+  border-left: 3px solid #4f7ef8;
+  padding-left: 15px;
+}
+
+.sidebar-section-link:hover {
+  color: #4f7ef8;
+}
+
+.sidebar-section-disabled {
+  display: block;
+  color: #c7cad1;
+  font-style: italic;
+  cursor: default;
+}
+
 .chev {
   width: 16px;
   height: 16px;

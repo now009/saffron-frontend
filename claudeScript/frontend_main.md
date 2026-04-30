@@ -656,3 +656,25 @@ http://localhost:8080/portal/roles/user-menus/${userId} endpoint를 이용하여
    - 관리자이면 화면 상단 오른쪽에 [저장][삭제] 버튼이 있어야 되고 저장, 삭제 기능 구현  
    - 수정/삭제하면 List로 이동
 - portal 폴더아래 notice 폴더 생성후 notice.jsx 파일생성후 구현   
+
+
+
+  메인 Top화면 오른쪽에 Login 사용자이름 오른쪽에 "Potal" 메뉴를 만들고 
+  접속자가 manager인경우에만 보여줘
+
+  "Portal"같은 상단메뉴가 여러개 추가할수 있도록 menuConfig.js에서 관리할수 있도록 해줘 , 여기 메뉴는 DB를 이용하지 않을거야
+
+  - SaffronLeft.jsx 를 portal/PortalLeft.jsx로 이동및 파일명 변경
+  - SaffronMain.jsx 를 portal/PortalMain.jsx로 이동및 파일명 변경
+
+  - 처음 로그인시 main화면은 상단 SaffronTop는 유지하고 
+  - left,main처럼 frame을 나누지 않고 하나의 화면으로 구성 - SaffronBody.jsx 
+    "Saffron 에 오신 것을 환영합니다.
+    "상단 메뉴를 클릭하여 시작하세요."  안내메세지로 구성
+
+   - Top의 "Portal"을 상단 왼쪽으로 위치 변경
+   - Top의 "Portal"을 클릭하면 지금과 같은 PortalLeft , PortalMain 화면 조회
+
+- Portal Left화면 안내메세지 아래에 공지사항을 최신날짜순으로 Grid 5개 Row를 보여주고 
+   - Grid Row를 클릭하면 공지사항 View화면으로 이동 
+   - Grid 상단 오른쪽에 [목록]으로 이동버튼을 생성한후 클릭하면 공지사항 List로 이동하도록 구현

@@ -14,7 +14,7 @@ const sortFn = (a, b) =>
   (a.sortOrder ?? 0) - (b.sortOrder ?? 0) ||
   String(a.menuId ?? '').localeCompare(String(b.menuId ?? ''))
 
-function SaffronLeft({ open, menus }) {
+function PortalLeft({ open, menus }) {
   const location = useLocation()
 
   const { roots, childrenByParent } = useMemo(() => {
@@ -61,8 +61,29 @@ function SaffronLeft({ open, menus }) {
             <div className="sidebar-empty">접근 가능한 메뉴가 없습니다.</div>
           ) : (
             roots.map((root) => {
-              const isOpen   = expanded.has(root.menuId)
               const children = childrenByParent.get(root.menuId) ?? []
+              const isDirectory = children.length > 0
+
+              if (!isDirectory) {
+                return (
+                  <div key={root.menuId} className="sidebar-section">
+                    {root.programUrl ? (
+                      <Link
+                        to={root.programUrl}
+                        className={`sidebar-section-header sidebar-section-link ${location.pathname === root.programUrl ? 'active' : ''}`}
+                      >
+                        <span>{root.menuName}</span>
+                      </Link>
+                    ) : (
+                      <span className="sidebar-section-header sidebar-section-disabled">
+                        {root.menuName}
+                      </span>
+                    )}
+                  </div>
+                )
+              }
+
+              const isOpen = expanded.has(root.menuId)
               return (
                 <div key={root.menuId} className="sidebar-section">
                   <button
@@ -74,9 +95,7 @@ function SaffronLeft({ open, menus }) {
                   </button>
                   {isOpen && (
                     <ul className="sidebar-submenu">
-                      {children.length === 0 ? (
-                        <li className="sidebar-empty-sub">하위 메뉴 없음</li>
-                      ) : children.map((c) => (
+                      {children.map((c) => (
                         <li
                           key={c.menuId}
                           className={`sidebar-item ${location.pathname === c.programUrl ? 'active' : ''}`}
@@ -114,4 +133,4 @@ function SaffronLeft({ open, menus }) {
   )
 }
 
-export default SaffronLeft
+export default PortalLeft

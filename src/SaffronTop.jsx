@@ -1,10 +1,16 @@
-import '../common/css/SaffronTop.css'
-import portalLogo from '../images/portal-logo.svg'
-import serverConfig from '../../config/serverConfig.js'
+import { useNavigate } from 'react-router-dom'
+import './portal/common/css/SaffronTop.css'
+import portalLogo from './portal/images/portal-logo.svg'
+import serverConfig from './config/serverConfig.js'
+import { TOP_MENUS } from './portal/main/menuConfig.js'
 
 function SaffronTop({ onToggleSidebar }) {
+  const navigate = useNavigate()
   const user = serverConfig.token.payload()
+  const isAdmin = serverConfig.token.isAdmin()
   const displayName = user?.userName || user?.userId || user?.sub || 'User'
+
+  const visibleTopMenus = TOP_MENUS.filter((m) => !m.adminOnly || isAdmin)
 
   const handleLogout = () => {
     serverConfig.token.remove()
@@ -19,7 +25,18 @@ function SaffronTop({ onToggleSidebar }) {
             <path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/>
           </svg>
         </button>
-        <img src={portalLogo} alt="Saffron Portal" className="portal-logo" />
+        <img
+          src={portalLogo}
+          alt="Saffron"
+          className="portal-logo"
+          onClick={() => navigate('/')}
+          style={{ cursor: 'pointer' }}
+        />
+        {visibleTopMenus.map((m) => (
+          <button key={m.label} className="portal-btn" onClick={() => navigate(m.path)}>
+            {m.label}
+          </button>
+        ))}
       </div>
       <div className="top-right">
         <div className="user-info">

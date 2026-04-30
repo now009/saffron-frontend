@@ -48,7 +48,7 @@ const apiUri = {
     delete:    (id)     => `${portal}/portal/roles/delete/${id}`,
     checkCode: (code)   => `${portal}/portal/roles/check-code/${code}`,
     nextId:    ()       => `${portal}/portal/roles/next-id`,
-    userMenus: (userId) => `${portal}/portal/roles/user-menus/${userId}`,
+    userMenus: (userId, site) => `${portal}/portal/roles/user-menus/${userId}${site ? `?site=${encodeURIComponent(site)}` : ''}`,
   },
   roleSetting: {
     roles:     ()         => `${portal}/portal/rolesetting`,

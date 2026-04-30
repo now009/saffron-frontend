@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
+import { useLocation } from 'react-router-dom'
 import apiUri from '../../api/apiUri'
 import serverConfig from '../../config/serverConfig'
+import { TOP_MENUS, getCurrentSite } from '../main/menuConfig.js'
 import '../common/css/grid.css'
 
 const PAGE_SIZE = 10
@@ -40,7 +42,7 @@ function CellValue({ colKey, value }) {
   return <>{value ?? '-'}</>
 }
 
-function ActionMenu({ row, onEdit, onDelete }) {
+function ActionMenu({ row, onEdit, onDelete, canDelete = true }) {
   const [open, setOpen]     = useState(false)
   const [openUp, setOpenUp] = useState(false)
   const ref    = useRef(null)
@@ -71,7 +73,9 @@ function ActionMenu({ row, onEdit, onDelete }) {
       {open && (
         <div className={`action-dropdown ${openUp ? 'up' : ''}`}>
           <button className="action-item edit" onClick={() => { onEdit(row); setOpen(false) }}>수정</button>
-          <button className="action-item delete" onClick={() => { onDelete(row); setOpen(false) }}>삭제</button>
+          {canDelete && (
+            <button className="action-item delete" onClick={() => { onDelete(row); setOpen(false) }}>삭제</button>
+          )}
         </div>
       )}
     </div>
@@ -137,6 +141,7 @@ function ProgramSelectModal({ onClose, onSelect }) {
                 <tr>
                   <th className="radio-cell"></th>
                   <th>프로그램 ID</th>
+                  <th>프로그램명</th>
                   <th>프로그램 URL</th>
                 </tr>
               </thead>
@@ -147,6 +152,7 @@ function ProgramSelectModal({ onClose, onSelect }) {
                       <input type="radio" readOnly checked={selected?.programId === p.programId} />
                     </td>
                     <td>{p.programId}</td>
+                    <td>{p.programName ?? '-'}</td>
                     <td>{p.programUrl ?? '-'}</td>
                   </tr>
                 ))}
@@ -203,7 +209,7 @@ function MenuModal({ mode, form: initialForm, onClose, onSave }) {
   const handleSubmit = () => {
     if (!form.menuId)   { alert('메뉴 ID를 입력하세요');  return }
     if (!form.menuName) { alert('메뉴명을 입력하세요');   return }
-    if (!isEdit && form.menuDirYn !== 'Y' && !form.parentMenuId) { alert('상위메뉴를 입력하세요'); return }
+    if (!isEdit && (form.menuLevel ?? 1) > 1 && !form.parentMenuId) { alert('상위메뉴를 선택하세요'); return }
     if (form.menuDirYn !== 'Y' && !form.programId) { alert('프로그램 ID를 입력하세요'); return }
     const payload = form.menuDirYn === 'Y'
       ? { ...form, programId: '', programUrl: '' }
@@ -223,6 +229,16 @@ function MenuModal({ mode, form: initialForm, onClose, onSave }) {
             <label>메뉴 ID</label>
             <input value={form.menuId} readOnly placeholder="조회 중..." />
           </div>
+          {!isEdit && (
+            <div className="modal-field">
+              <label>Site</label>
+              <select value={form.site ?? ''} onChange={(e) => set('site', e.target.value)}>
+                {TOP_MENUS.map((m) => (
+                  <option key={m.label} value={m.label.toLowerCase()}>{m.label}</option>
+                ))}
+              </select>
+            </div>
+          )}
           {(!isEdit || (form.menuLevel ?? 1) <= 2) && (
             <div className="modal-field">
               <label>상위 메뉴 ID</label>
@@ -338,6 +354,11 @@ function Pagination({ current, total, onChange }) {
 }
 
 function Menu() {
+  const location = useLocation()
+  const initialSite =
+    getCurrentSite(location.pathname) ?? TOP_MENUS[0].label.toLowerCase()
+
+  const [site, setSite]       = useState(initialSite)
   const [rows, setRows]       = useState([])
   const [loading, setLoading] = useState(true)
   const [modal, setModal]     = useState(null)
@@ -347,12 +368,13 @@ function Menu() {
 
   const [currentPage, setCurrentPage] = useState(1)
 
-  const fetchData = async (field = '', keyword = '') => {
+  const fetchData = async (field = '', keyword = '', selectedSite = site) => {
     setLoading(true)
     try {
       const queryParam = SEARCH_FIELDS.find((f) => f.value === field)?.queryParam ?? field
       const params = new URLSearchParams()
       if (keyword) params.set(queryParam, keyword)
+      if (selectedSite) params.set('site', selectedSite)
 
       const url = params.toString()
         ? `${apiUri.menus.list()}?${params}`
@@ -361,7 +383,7 @@ function Menu() {
       const res = await fetch(url, {
         method: 'POST',
         headers: { ...serverConfig.token.authHeader(), 'Content-Type': 'application/json' },
-        body: JSON.stringify({}),
+        body: JSON.stringify({ site: selectedSite }),
       })
       if (!res.ok) throw new Error(`서버 오류 (${res.status})`)
       const data = await res.json()
@@ -373,11 +395,17 @@ function Menu() {
     }
   }
 
-  useEffect(() => { fetchData() }, [])
+  useEffect(() => { fetchData('', '', site) }, [site])
 
   const handleSearch = () => {
     setCurrentPage(1)
-    fetchData(searchField, searchInput)
+    fetchData(searchField, searchInput, site)
+  }
+
+  const handleSiteChange = (newSite) => {
+    setSite(newSite)
+    setCurrentPage(1)
+    setSearchInput('')
   }
 
   const handleEdit = (row) => {
@@ -400,7 +428,7 @@ function Menu() {
   const handleAdd = () => {
     setModal({
       mode: 'add',
-      form: { menuId: '', parentMenuId: '', menuName: '', menuLevel: 1, menuDirYn: 'N', programId: '', programUrl: '', sortOrder: 1, useYn: 'Y' },
+      form: { menuId: '', parentMenuId: '', menuName: '', menuLevel: 1, menuDirYn: 'N', programId: '', programUrl: '', sortOrder: 1, useYn: 'Y', site },
     })
   }
 
@@ -411,7 +439,7 @@ function Menu() {
       const res = await fetch(url, {
         method: 'POST',
         headers: { ...serverConfig.token.authHeader(), 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ site, ...form }),
       })
       const data = await res.json()
       setModal(null)
@@ -419,7 +447,7 @@ function Menu() {
         alert(data.message)
         return
       }
-      fetchData(searchField, searchInput)
+      fetchData(searchField, searchInput, site)
     } catch (err) {
       setModal(null)
       alert(`저장 실패 (${err.message})`)
@@ -432,21 +460,21 @@ function Menu() {
       const res = await fetch(apiUri.menus.delete(row.menuId), {
         method: 'POST',
         headers: { ...serverConfig.token.authHeader(), 'Content-Type': 'application/json' },
-        body: JSON.stringify({}),
+        body: JSON.stringify({ site }),
       })
       const data = await res.json()
       if (data.messageCode === 'fail') {
         alert(data.message)
         return
       }
-      fetchData(searchField, searchInput)
+      fetchData(searchField, searchInput, site)
     } catch (err) {
       alert(`삭제 실패 (${err.message})`)
     }
   }
 
   const hasChildIds = new Set(rows.map((r) => r.parentMenuId).filter(Boolean))
-  const showAction  = (row) => !hasChildIds.has(row.menuId)
+  const canDelete   = (row) => !hasChildIds.has(row.menuId)
 
   const totalPages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE))
   const pageRows   = rows.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE)
@@ -456,7 +484,18 @@ function Menu() {
       <div className="content-body">
         <div className="grid-container">
             <div className="grid-toolbar">
-              <span className="grid-title">메뉴관리</span>
+              <div className="grid-toolbar-left">
+                <span className="grid-title">메뉴관리</span>
+                <select
+                  className="site-select"
+                  value={site}
+                  onChange={(e) => handleSiteChange(e.target.value)}
+                >
+                  {TOP_MENUS.map((m) => (
+                    <option key={m.label} value={m.label.toLowerCase()}>{m.label}</option>
+                  ))}
+                </select>
+              </div>
               <div className="grid-toolbar-right">
                 <span className="grid-count">총 <span>{rows.length}</span>건</span>
                 <div className="grid-search-bar">
@@ -507,7 +546,7 @@ function Menu() {
                         {COLUMNS.map((col) => (
                           <td key={col.key} className={col.key === '__action' ? 'action-cell' : ''}>
                             {col.key === '__action'
-                              ? (showAction(row) && <ActionMenu row={row} onEdit={handleEdit} onDelete={handleDelete} />)
+                              ? <ActionMenu row={row} onEdit={handleEdit} onDelete={handleDelete} canDelete={canDelete(row)} />
                               : col.key === 'menuNameTree'
                               ? <TreeCell name={row.menuNameTree} depth={row.depth ?? 0} />
                               : <CellValue colKey={col.key} value={row[col.key]} />
