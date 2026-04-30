@@ -678,3 +678,41 @@ http://localhost:8080/portal/roles/user-menus/${userId} endpoint를 이용하여
 - Portal Left화면 안내메세지 아래에 공지사항을 최신날짜순으로 Grid 5개 Row를 보여주고 
    - Grid Row를 클릭하면 공지사항 View화면으로 이동 
    - Grid 상단 오른쪽에 [목록]으로 이동버튼을 생성한후 클릭하면 공지사항 List로 이동하도록 구현
+
+지금 요청한 공지사항 관련내용을 PortalMain.jsx로 변경해줘
+
+- PortalLeft.jsx , PortalMain.jsx를 portal/main 으로 이동
+- SaffronBody.css , SaffronBody.jsx , SaffronTop.js를 src 아래로 이동해줘
+
+
+---------------------------------------------------------------------------
+- menu_info table site 컬럼이 추가 
+- SaffronTop 에서 "Portal" 선택시 조회되는 menu는 site='portal' 파라미터 추가 조회요청
+
+- menu관리 grid 상단 오른쪽에 select boxt로 /src/portal/main/menuConfig.js의 label을 보여주고
+  parameter로 이용할때는 소문자로 넘김  
+  ex) site='portal'
+  Modal 등록/수정/삭제시에는 parameter를 hidden형태로 사용자에게는 보여주지 않고 내부적으로 처리
+  메뉴 List조회시 default로 site 조건 적용  
+---------------------------------------------------------------------------
+-- menu_info table site 컬럼추가에 따른 backend 수정사항 
+-------------------------------------------------------
+DTO — site 필드 + getter/setter 추가
+  - MenuDto.java                                                                                                                                                                                             
+  - MenuListDto.java
+  - MenuTreeDto.java                                                                                                                                                                                         
+                                                            
+  Mapper 인터페이스 (MenuMapper.java) — site 파라미터 추가
+  - selectMenuList(menuId, menuName, site)
+  - selectMenu(site)
+  - selectParentMenus(site)
+
+  Service / ServiceImpl — 시그니처 갱신 및 site 전달
+  - getMenus(menuId, menuName, site), getMenuTree(site), getParentMenus(site)
+
+  Controller (MenuController.java) — @RequestParam(required = false) String site 추가
+
+  MenuMapper.xml — site 컬럼/조건 반영
+  - insertMenu: site 컬럼 INSERT
+  - updateMenu: site가 null/빈문자열이 아닐 때만 UPDATE
+  - selectMenuList, selectMenu, selectParentMenus: SELECT에 site 컬럼 추가, site 파라미터가 null/빈문자열이면 필터 미적용(<if test="site != null and site != ''">)
