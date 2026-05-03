@@ -194,7 +194,7 @@ function Datasource() {
               <span>{modal === 'edit' ? 'DataSource 수정' : 'DataSource 등록'}</span>
               <button onClick={closeModal} style={{ background: 'none', border: 'none', fontSize: 18, cursor: 'pointer' }}>×</button>
             </div>
-            <div className="modal-body" style={{ display: 'flex', gap: 16, alignItems: 'flex-start' }}>
+            <div className="modal-body" style={{ display: 'flex', flexDirection: 'row', gap: 16, alignItems: 'flex-start' }}>
               <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 12 }}>
                 <div className="eai-form-section">
                   <h4>기본 정보</h4>
