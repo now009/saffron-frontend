@@ -382,3 +382,80 @@ VITE_EAI_SSE_URL=/eai/api/monitoring/stream
 VITE_EAI_KAFKA_LAG_THRESHOLD=1000
 VITE_EAI_DLQ_THRESHOLD=100
 ```
+
+
+eai_db_adapter_def table을 삭제했어
+- src/eai/pages/DbAdapter.jsx을 삭제하고 새로 생성한 아래의 Table 정보를 보고 
+  4개의 메뉴별 화면을 생성해줘 
+
+eai_db_adapter_def table을 삭제했고, 4개의 table을 추가했어 
+1. eai_datasource;
+2. eai_db_adapter_config;
+3. table eai_rest_config;
+4. table eai_soap_config;
+
+- table정보 : C:\00.Saffron\saffron-api\src\main\resources\sql\eai_adapter_table.sql
+- backend endpoint                                                                                         
+  eai_datasource
+
+  ┌────────┬───────────────────────┬──────────────────┐                                                                                                                                                                                                                          
+  │ Method │          URL          │      Query       │                                                                                                                                                                                                                          
+  ├────────┼───────────────────────┼──────────────────┤                                                                                                                                                                                                                          
+  │ GET    │ /eai/datasources      │ dbType, isActive │                                                                                                                                                                                                                          
+  ├────────┼───────────────────────┼──────────────────┤
+  │ GET    │ /eai/datasources/{id} │                  │
+  ├────────┼───────────────────────┼──────────────────┤
+  │ POST   │ /eai/datasources      │                  │
+  ├────────┼───────────────────────┼──────────────────┤
+  │ PUT    │ /eai/datasources/{id} │                  │
+  ├────────┼───────────────────────┼──────────────────┤
+  │ DELETE │ /eai/datasources/{id} │                  │
+  └────────┴───────────────────────┴──────────────────┘
+
+  eai_db_adapter_config
+
+  ┌────────┬──────────────────────────────┬───────────────────────────┐
+  │ Method │             URL              │           Query           │
+  ├────────┼──────────────────────────────┼───────────────────────────┤
+  │ GET    │ /eai/db-adapter-configs      │ interfaceId, datasourceId │
+  ├────────┼──────────────────────────────┼───────────────────────────┤
+  │ GET    │ /eai/db-adapter-configs/{id} │                           │
+  ├────────┼──────────────────────────────┼───────────────────────────┤
+  │ POST   │ /eai/db-adapter-configs      │                           │
+  ├────────┼──────────────────────────────┼───────────────────────────┤
+  │ PUT    │ /eai/db-adapter-configs/{id} │                           │
+  ├────────┼──────────────────────────────┼───────────────────────────┤
+  │ DELETE │ /eai/db-adapter-configs/{id} │                           │
+  └────────┴──────────────────────────────┴───────────────────────────┘
+
+  eai_rest_config
+
+  ┌────────┬────────────────────────┬─────────────┐
+  │ Method │          URL           │    Query    │
+  ├────────┼────────────────────────┼─────────────┤
+  │ GET    │ /eai/rest-configs      │ interfaceId │
+  ├────────┼────────────────────────┼─────────────┤
+  │ GET    │ /eai/rest-configs/{id} │             │
+  ├────────┼────────────────────────┼─────────────┤
+  │ POST   │ /eai/rest-configs      │             │
+  ├────────┼────────────────────────┼─────────────┤
+  │ PUT    │ /eai/rest-configs/{id} │             │
+  ├────────┼────────────────────────┼─────────────┤
+  │ DELETE │ /eai/rest-configs/{id} │             │
+  └────────┴────────────────────────┴─────────────┘
+
+  eai_soap_config
+
+  ┌────────┬────────────────────────┬─────────────┐
+  │ Method │          URL           │    Query    │
+  ├────────┼────────────────────────┼─────────────┤
+  │ GET    │ /eai/soap-configs      │ interfaceId │
+  ├────────┼────────────────────────┼─────────────┤
+  │ GET    │ /eai/soap-configs/{id} │             │
+  ├────────┼────────────────────────┼─────────────┤
+  │ POST   │ /eai/soap-configs      │             │
+  ├────────┼────────────────────────┼─────────────┤
+  │ PUT    │ /eai/soap-configs/{id} │             │
+  ├────────┼────────────────────────┼─────────────┤
+  │ DELETE │ /eai/soap-configs/{id} │             │
+  └────────┴────────────────────────┴─────────────┘
