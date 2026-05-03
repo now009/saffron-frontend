@@ -26,6 +26,7 @@ import InterfaceForm   from '../../eai/pages/InterfaceForm.jsx'
 import MessageHistory  from '../../eai/pages/MessageHistory.jsx'
 import ScheduleList    from '../../eai/pages/ScheduleList.jsx'
 import Monitoring      from '../../eai/pages/Monitoring.jsx'
+import DbAdapter       from '../../eai/pages/DbAdapter.jsx'
 
 const TYPE_LABEL = { NORMAL: '일반', IMPORTANT: '중요', POPUP: '팝업' }
 const TYPE_BADGE = { NORMAL: 'off', IMPORTANT: 'level1', POPUP: 'level2' }
@@ -132,6 +133,7 @@ function PortalMain() {
         <Route path="/eai/history"               element={<MessageHistory />} />
         <Route path="/eai/schedules"             element={<ScheduleList />} />
         <Route path="/eai/monitoring"            element={<Monitoring />} />
+        <Route path="/eai/db-adapters"           element={<DbAdapter />} />
         <Route path="/portal/users/list"         element={<User />} />
         <Route path="/portal/depts/list"         element={<Dept />} />
         <Route path="/portal/menus/list"         element={<Menu />} />

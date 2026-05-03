@@ -33,6 +33,13 @@ const eaiApi = {
     run:    (id)         => fetch(`${base}/eai/api/schedules/${id}/run`, { method: 'POST', headers: h() }).then(r => r.json()),
     toggle: (id, active) => fetch(`${base}/eai/api/schedules/${id}/toggle`, { method: 'PATCH', headers: h(), body: JSON.stringify({ isActive: active }) }).then(r => r.json()),
   },
+  dbAdapter: {
+    list:   (params = {}) => fetch(`${base}/api/eai/db-adapters?${qs(params)}`, { headers: serverConfig.token.authHeader() }).then(r => r.json()),
+    get:    (id)          => fetch(`${base}/api/eai/db-adapters/${id}`, { headers: serverConfig.token.authHeader() }).then(r => r.json()),
+    create: (data)        => fetch(`${base}/api/eai/db-adapters`, { method: 'POST', headers: h(), body: JSON.stringify(data) }).then(r => r.json()),
+    update: (id, data)    => fetch(`${base}/api/eai/db-adapters/${id}`, { method: 'PUT',  headers: h(), body: JSON.stringify(data) }).then(r => r.json()),
+    delete: (id)          => fetch(`${base}/api/eai/db-adapters/${id}`, { method: 'DELETE', headers: h() }).then(r => r.json()),
+  },
 }
 
 export default eaiApi
