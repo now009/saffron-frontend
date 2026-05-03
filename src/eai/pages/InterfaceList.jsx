@@ -1,0 +1,123 @@
+import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import StatusBadge from '../components/StatusBadge'
+import eaiApi from '../api/eaiApi'
+import '../eai.css'
+
+const ADAPTER_TYPES = ['', 'REST', 'SOAP', 'DB', 'FILE']
+const STATUS_TYPES  = ['', 'ACTIVE', 'WARNING', 'ERROR', 'INACTIVE']
+
+function InterfaceList() {
+  const navigate = useNavigate()
+  const [list, setList]       = useState([])
+  const [loading, setLoading] = useState(true)
+  const [filter, setFilter]   = useState({ status: '', adapterType: '', keyword: '' })
+
+  const load = () => {
+    setLoading(true)
+    eaiApi.interface.list(filter)
+      .then(data => setList(Array.isArray(data) ? data : (data.content ?? [])))
+      .catch(() => setList([]))
+      .finally(() => setLoading(false))
+  }
+
+  useEffect(() => { load() }, [])
+
+  const handleToggle = (e, item) => {
+    e.stopPropagation()
+    if (!window.confirm(`인터페이스를 ${item.isActive ? '비활성화' : '활성화'}하시겠습니까?`)) return
+    eaiApi.interface.toggle(item.id, !item.isActive).then(load)
+  }
+
+  return (
+    <div className="dashboard-area">
+      <div className="grid-container">
+        <div className="grid-toolbar">
+          <span className="grid-title">인터페이스 관리</span>
+          <div className="grid-toolbar-right">
+            <select
+              className="grid-search-input"
+              value={filter.status}
+              onChange={e => setFilter(f => ({ ...f, status: e.target.value }))}
+            >
+              <option value="">전체 상태</option>
+              {STATUS_TYPES.slice(1).map(s => <option key={s} value={s}>{s}</option>)}
+            </select>
+            <select
+              className="grid-search-input"
+              value={filter.adapterType}
+              onChange={e => setFilter(f => ({ ...f, adapterType: e.target.value }))}
+            >
+              <option value="">전체 유형</option>
+              {ADAPTER_TYPES.slice(1).map(t => <option key={t} value={t}>{t}</option>)}
+            </select>
+            <input
+              className="grid-search-input"
+              placeholder="키워드 검색"
+              value={filter.keyword}
+              onChange={e => setFilter(f => ({ ...f, keyword: e.target.value }))}
+              onKeyDown={e => e.key === 'Enter' && load()}
+            />
+            <button className="grid-search-btn" onClick={load}>검색</button>
+            <button className="grid-add-btn" onClick={() => navigate('/eai/interfaces/new')}>+ 등록</button>
+          </div>
+        </div>
+
+        <div className="grid-wrap">
+          <table className="grid-table">
+            <colgroup>
+              <col style={{ width: 110 }} />
+              <col />
+              <col style={{ width: 100 }} />
+              <col style={{ width: 100 }} />
+              <col style={{ width: 70 }} />
+              <col style={{ width: 80 }} />
+              <col style={{ width: 90 }} />
+              <col style={{ width: 130 }} />
+              <col style={{ width: 80 }} />
+            </colgroup>
+            <thead>
+              <tr>
+                <th>인터페이스ID</th>
+                <th>인터페이스명</th>
+                <th>송신시스템</th>
+                <th>수신시스템</th>
+                <th>유형</th>
+                <th>상태</th>
+                <th>오늘 처리</th>
+                <th>마지막 실행</th>
+                <th>활성화</th>
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? (
+                <tr><td colSpan={9} className="grid-loading">로딩 중...</td></tr>
+              ) : list.length === 0 ? (
+                <tr><td colSpan={9} className="grid-empty">데이터가 없습니다.</td></tr>
+              ) : list.map(item => (
+                <tr key={item.id} onClick={() => navigate(`/eai/interfaces/${item.id}`)}>
+                  <td>{item.interfaceId}</td>
+                  <td>{item.name}</td>
+                  <td>{item.sourceSystem}</td>
+                  <td>{item.targetSystem}</td>
+                  <td>{item.adapterType}</td>
+                  <td><StatusBadge status={item.status} /></td>
+                  <td style={{ textAlign: 'right' }}>{(item.todayCount ?? 0).toLocaleString()}</td>
+                  <td>{item.lastRunAt ? String(item.lastRunAt).slice(0, 16) : '-'}</td>
+                  <td>
+                    <button
+                      className={`eai-toggle-btn ${item.isActive ? 'on' : 'off'}`}
+                      onClick={e => handleToggle(e, item)}
+                    >{item.isActive ? 'ON' : 'OFF'}</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default InterfaceList

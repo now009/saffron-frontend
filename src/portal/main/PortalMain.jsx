@@ -19,7 +19,13 @@ import Board from '../board/board.jsx'
 import Post from '../board/post.jsx'
 import PostView from '../board/postView.jsx'
 import PostEdit from '../board/postEdit.jsx'
-import EaiMain from '../../eai/eaiMain.jsx'
+import EaiDashboard    from '../../eai/pages/Dashboard.jsx'
+import InterfaceList   from '../../eai/pages/InterfaceList.jsx'
+import InterfaceDetail from '../../eai/pages/InterfaceDetail.jsx'
+import InterfaceForm   from '../../eai/pages/InterfaceForm.jsx'
+import MessageHistory  from '../../eai/pages/MessageHistory.jsx'
+import ScheduleList    from '../../eai/pages/ScheduleList.jsx'
+import Monitoring      from '../../eai/pages/Monitoring.jsx'
 
 const TYPE_LABEL = { NORMAL: '일반', IMPORTANT: '중요', POPUP: '팝업' }
 const TYPE_BADGE = { NORMAL: 'off', IMPORTANT: 'level1', POPUP: 'level2' }
@@ -118,7 +124,14 @@ function PortalMain() {
     <main className="main-content">
       <Routes>
         <Route path="/portal"                    element={<PortalDashboard />} />
-        <Route path="/eai"                       element={<EaiMain />} />
+        <Route path="/eai"                         element={<EaiDashboard />} />
+        <Route path="/eai/interfaces"            element={<InterfaceList />} />
+        <Route path="/eai/interfaces/new"        element={<InterfaceForm />} />
+        <Route path="/eai/interfaces/:id"        element={<InterfaceDetail />} />
+        <Route path="/eai/interfaces/:id/edit"   element={<InterfaceForm />} />
+        <Route path="/eai/history"               element={<MessageHistory />} />
+        <Route path="/eai/schedules"             element={<ScheduleList />} />
+        <Route path="/eai/monitoring"            element={<Monitoring />} />
         <Route path="/portal/users/list"         element={<User />} />
         <Route path="/portal/depts/list"         element={<Dept />} />
         <Route path="/portal/menus/list"         element={<Menu />} />

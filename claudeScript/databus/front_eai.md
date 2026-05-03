@@ -29,23 +29,23 @@ src/
 │   ├── FlowDesigner.tsx       # 워크플로우 흐름도 편집기 (React Flow)
 │   ├── ScheduleList.tsx       # 배치 스케줄 목록 + Cron 설정
 │   └── Monitoring.tsx         # Kafka Lag, SLA, TPS 모니터링 차트
-├── components/eai/
+├── /eai/components/
 │   ├── AdapterConfigForm.tsx  # 어댑터 설정 입력 폼 (REST/SOAP/DB/FILE 탭)
 │   ├── MappingRuleEditor.tsx  # 소스→타깃 필드 매핑 테이블 편집기
 │   ├── MessageViewer.tsx      # JSON/XML 메시지 원문 뷰어 (접기/펼치기)
 │   ├── StatusBadge.tsx        # 운영/경고/오류/비활성 상태 뱃지
 │   ├── KpiCard.tsx            # 처리건수/성공률/응답시간 KPI 카드
 │   └── PartitionChart.tsx     # Kafka 파티션별 처리량 차트
-├── hooks/eai/
+├── /eai/hooks/
 │   ├── useEaiDashboard.ts     # 대시보드 실시간 SSE 구독 훅
 │   ├── useInterfaceList.ts    # 인터페이스 목록 조회/필터링 훅
 │   └── useMessageHistory.ts   # 메시지 이력 조회 + 페이징 훅
-├── api/eai/
+├── /eai/api/
 │   ├── interfaceApi.ts        # 인터페이스 CRUD API 호출 함수
 │   ├── messageApi.ts          # 메시지 이력 조회/재처리 API
 │   ├── monitoringApi.ts       # 모니터링 지표 조회 API
 │   └── scheduleApi.ts         # 스케줄 조회/실행 API
-└── types/eai/
+└── /eai/types/
     └── eai.types.ts           # EAI 관련 TypeScript 타입 정의
 ```
 
@@ -79,7 +79,8 @@ src/
 ## 요청 3 — 타입 정의 (eai.types.ts)
 
 ```typescript
-// src/types/eai/eai.types.ts 파일을 아래 내용으로 생성해 주세요.
+아래의 내용을 현재의 프로젝트 구조에 맞춰 생성해줘
+// src/eai/types/eai.types.ts 파일을 아래 내용으로 생성해 주세요.
 
 export type AdapterType = 'REST' | 'SOAP' | 'DB' | 'FILE';
 export type InterfaceStatus = 'ACTIVE' | 'WARNING' | 'ERROR' | 'INACTIVE';
@@ -162,11 +163,11 @@ export interface DashboardSnapshot {
 ## 요청 4 — API 호출 함수 (interfaceApi.ts)
 
 ```typescript
-// src/api/eai/interfaceApi.ts
+// src/eai/api/interfaceApi.ts
 // 기존 프로젝트의 axios 인스턴스(apiClient)를 import해서 사용해 주세요.
 
 import { apiClient } from '@/api/apiClient'; // 기존 공통 axios 인스턴스
-import type { InterfaceDef, AdapterConfig, MappingRule } from '@/types/eai/eai.types';
+import type { InterfaceDef, AdapterConfig, MappingRule } from '@/eai/types//eai.types';
 
 // 인터페이스 목록 조회
 export const getInterfaceList = (params?: {
@@ -175,43 +176,43 @@ export const getInterfaceList = (params?: {
   keyword?: string;
   page?: number;
   size?: number;
-}) => apiClient.get<{ content: InterfaceDef[]; totalElements: number }>('/api/eai/interfaces', { params });
+}) => apiClient.get<{ content: InterfaceDef[]; totalElements: number }>('/eai/api/interfaces', { params });
 
 // 인터페이스 단건 조회
 export const getInterface = (id: number) =>
-  apiClient.get<InterfaceDef>(`/api/eai/interfaces/${id}`);
+  apiClient.get<InterfaceDef>(`/eai/api/interfaces/${id}`);
 
 // 인터페이스 등록
 export const createInterface = (data: Partial<InterfaceDef>) =>
-  apiClient.post<InterfaceDef>('/api/eai/interfaces', data);
+  apiClient.post<InterfaceDef>('/eai/api/interfaces', data);
 
 // 인터페이스 수정
 export const updateInterface = (id: number, data: Partial<InterfaceDef>) =>
-  apiClient.put<InterfaceDef>(`/api/eai/interfaces/${id}`, data);
+  apiClient.put<InterfaceDef>(`/eai/api/interfaces/${id}`, data);
 
 // 인터페이스 활성/비활성 토글
 export const toggleInterface = (id: number, isActive: boolean) =>
-  apiClient.patch(`/api/eai/interfaces/${id}/toggle`, { isActive });
+  apiClient.patch(`/eai/api/interfaces/${id}/toggle`, { isActive });
 
 // 어댑터 설정 조회
 export const getAdapterConfig = (interfaceId: string) =>
-  apiClient.get<AdapterConfig>(`/api/eai/adapters/${interfaceId}`);
+  apiClient.get<AdapterConfig>(`/eai/api/adapters/${interfaceId}`);
 
 // 어댑터 설정 저장
 export const saveAdapterConfig = (data: AdapterConfig) =>
-  apiClient.post<AdapterConfig>('/api/eai/adapters', data);
+  apiClient.post<AdapterConfig>('/eai/api/adapters', data);
 
 // 매핑 규칙 조회
 export const getMappingRules = (interfaceId: string) =>
-  apiClient.get<MappingRule[]>(`/api/eai/mappings/${interfaceId}`);
+  apiClient.get<MappingRule[]>(`/eai/api/mappings/${interfaceId}`);
 
 // 매핑 규칙 저장 (일괄)
 export const saveMappingRules = (interfaceId: string, rules: MappingRule[]) =>
-  apiClient.post(`/api/eai/mappings/${interfaceId}`, rules);
+  apiClient.post(`/eai/api/mappings/${interfaceId}`, rules);
 
 // 테스트 전송
 export const testSend = (interfaceId: string, payload: string) =>
-  apiClient.post(`/api/eai/interfaces/${interfaceId}/test`, { payload });
+  apiClient.post(`/eai/api/interfaces/${interfaceId}/test`, { payload });
 ```
 
 ---
@@ -219,20 +220,20 @@ export const testSend = (interfaceId: string, payload: string) =>
 ## 요청 5 — 대시보드 컴포넌트 (Dashboard.tsx)
 
 ```typescript
-// src/pages/eai/Dashboard.tsx
+// src/eai/pages/Dashboard.tsx
 // 실시간 SSE로 KPI를 갱신하고 Recharts로 시간별 처리량 차트를 표시해 주세요.
 
 import React, { useEffect, useState } from 'react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { KpiCard } from '@/components/eai/KpiCard';
-import type { DashboardSnapshot } from '@/types/eai/eai.types';
+import type { DashboardSnapshot } from '@/eai/types//eai.types';
 
 export const EaiDashboard: React.FC = () => {
   const [snap, setSnap] = useState<DashboardSnapshot | null>(null);
 
   // SSE 실시간 구독 (5초 간격 서버 푸시)
   useEffect(() => {
-    const es = new EventSource('/api/eai/monitoring/stream');
+    const es = new EventSource('/eai/api/monitoring/stream');
     es.onmessage = (e) => setSnap(JSON.parse(e.data));
     return () => es.close();
   }, []);
@@ -283,7 +284,7 @@ export const EaiDashboard: React.FC = () => {
 ## 요청 6 — 인터페이스 등록 위저드 (InterfaceForm.tsx)
 
 ```typescript
-// src/pages/eai/InterfaceForm.tsx
+// src/eai/pages/InterfaceForm.tsx
 // 4단계 위저드(기본정보 → 어댑터 설정 → 매핑 설정 → 검토·테스트)로 구현해 주세요.
 // React Hook Form + Zod로 각 단계 유효성 검사를 수행합니다.
 
@@ -313,7 +314,7 @@ export const EaiDashboard: React.FC = () => {
 ## 요청 7 — 메시지 이력 조회 (MessageHistory.tsx)
 
 ```typescript
-// src/pages/eai/MessageHistory.tsx
+// src/eai/pages/MessageHistory.tsx
 // 검색 필터 + 테이블 + 상세 모달로 구성해 주세요.
 
 // 검색 필터:
@@ -328,7 +329,7 @@ export const EaiDashboard: React.FC = () => {
 // - 처리 타임라인 (수신→변환→전송→완료 각 소요시간)
 // - 오류 메시지 (실패 시)
 // - [재처리] 버튼 (status가 FAIL/DLQ인 경우만 표시)
-//   → 클릭 시 확인 다이얼로그 후 POST /api/eai/messages/{id}/retry
+//   → 클릭 시 확인 다이얼로그 후 POST /eai/api/messages/{id}/retry
 ```
 
 ---
@@ -377,7 +378,7 @@ npm install reactflow recharts @tanstack/react-query react-hook-form zod @hookfo
 # .env.development 및 .env.production 파일에 아래 변수를 추가해 주세요.
 
 VITE_EAI_API_BASE=/api/eai
-VITE_EAI_SSE_URL=/api/eai/monitoring/stream
+VITE_EAI_SSE_URL=/eai/api/monitoring/stream
 VITE_EAI_KAFKA_LAG_THRESHOLD=1000
 VITE_EAI_DLQ_THRESHOLD=100
 ```
