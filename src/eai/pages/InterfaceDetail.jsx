@@ -27,11 +27,12 @@ function InterfaceDetail() {
     }).catch(() => {}).finally(() => setLoading(false))
   }, [id])
 
-  if (loading) return <div className="dashboard-area"><p>로딩 중...</p></div>
-  if (!iface) return <div className="dashboard-area"><p>인터페이스를 찾을 수 없습니다.</p></div>
+  if (loading) return <div className="content-area"><div className="content-body"><p>로딩 중...</p></div></div>
+  if (!iface) return <div className="content-area"><div className="content-body"><p>인터페이스를 찾을 수 없습니다.</p></div></div>
 
   return (
-    <div className="dashboard-area">
+    <div className="content-area">
+    <div className="content-body">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
         <div>
           <h2 style={{ fontSize: 16, fontWeight: 700, marginBottom: 4 }}>{iface.name}</h2>
@@ -89,6 +90,7 @@ function InterfaceDetail() {
       {tab === 'mapping' && (
         <MappingRuleEditor rules={rules} onChange={() => {}} />
       )}
+    </div>
     </div>
   )
 }

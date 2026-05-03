@@ -84,6 +84,7 @@
 .grid-search-btn {
   background: #4f7ef8;
   border: none;
+  border-radius: 8px;
   color: #ffffff;
   padding: 7px 14px;
   cursor: pointer;
@@ -101,6 +102,11 @@
   width: 16px;
   height: 16px;
   fill: currentColor;
+}
+
+/* grid-search-bar 안의 버튼은 오른쪽 모서리만 둥글게 */
+.grid-search-bar .grid-search-btn {
+  border-radius: 0 8px 8px 0;
 }
 
 .grid-count {

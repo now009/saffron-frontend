@@ -32,14 +32,17 @@ function ScheduleList() {
   }
 
   return (
-    <div className="dashboard-area">
-      <div className="grid-container">
-        <div className="grid-toolbar">
-          <span className="grid-title">스케줄 관리</span>
-          <div className="grid-toolbar-right">
-            <button className="grid-search-btn" onClick={load}>새로고침</button>
+    <div className="content-area">
+      <div className="content-body">
+        <div className="grid-container">
+          <div className="grid-toolbar">
+            <div className="grid-toolbar-left">
+              <span className="grid-title">스케줄 관리</span>
+            </div>
+            <div className="grid-toolbar-right">
+              <button className="grid-search-btn" onClick={load}>새로고침</button>
+            </div>
           </div>
-        </div>
 
         <div className="grid-wrap">
           <table className="grid-table">
@@ -98,6 +101,7 @@ function ScheduleList() {
               ))}
             </tbody>
           </table>
+        </div>
         </div>
       </div>
     </div>

@@ -6,12 +6,20 @@ import '../eai.css'
 
 const STATUS_OPTIONS = ['', 'SUCCESS', 'FAIL', 'RETRY', 'DLQ']
 
+function SearchIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+      <path d="M10 18a7.952 7.952 0 004.897-1.688l4.396 4.396 1.414-1.414-4.396-4.396A8 8 0 1010 18zm0-14a6 6 0 110 12A6 6 0 0110 4z" />
+    </svg>
+  )
+}
+
 function MessageHistory() {
   const [list, setList]         = useState([])
   const [loading, setLoading]   = useState(true)
   const [selected, setSelected] = useState(null)
   const [retrying, setRetrying] = useState(false)
-  const [filter, setFilter]     = useState({ interfaceId: '', status: '', dateFrom: '', dateTo: '', keyword: '' })
+  const [filter, setFilter]     = useState({ interfaceId: '', status: '', dateFrom: '', dateTo: '' })
 
   const load = () => {
     setLoading(true)
@@ -33,127 +41,140 @@ function MessageHistory() {
   }
 
   return (
-    <div className="dashboard-area">
-      <div className="grid-container">
-        <div className="grid-toolbar">
-          <span className="grid-title">메시지 이력</span>
-          <div className="grid-toolbar-right">
-            <input
-              className="grid-search-input"
-              placeholder="인터페이스ID"
-              value={filter.interfaceId}
-              onChange={e => setFilter(f => ({ ...f, interfaceId: e.target.value }))}
-            />
-            <select
-              className="grid-search-input"
-              value={filter.status}
-              onChange={e => setFilter(f => ({ ...f, status: e.target.value }))}
-            >
-              <option value="">전체 상태</option>
-              {STATUS_OPTIONS.slice(1).map(s => <option key={s} value={s}>{s}</option>)}
-            </select>
-            <input
-              className="grid-search-input"
-              type="date"
-              value={filter.dateFrom}
-              onChange={e => setFilter(f => ({ ...f, dateFrom: e.target.value }))}
-            />
-            <span style={{ lineHeight: '30px', color: '#9ca3af' }}>~</span>
-            <input
-              className="grid-search-input"
-              type="date"
-              value={filter.dateTo}
-              onChange={e => setFilter(f => ({ ...f, dateTo: e.target.value }))}
-            />
-            <button className="grid-search-btn" onClick={load}>검색</button>
+    <div className="content-area">
+      <div className="content-body">
+        <div className="grid-container">
+          <div className="grid-toolbar">
+            <div className="grid-toolbar-left">
+              <span className="grid-title">메시지 이력</span>
+            </div>
+            <div className="grid-toolbar-right">
+              <select
+                className="site-select"
+                value={filter.status}
+                onChange={e => setFilter(f => ({ ...f, status: e.target.value }))}
+              >
+                <option value="">전체 상태</option>
+                {STATUS_OPTIONS.slice(1).map(s => <option key={s} value={s}>{s}</option>)}
+              </select>
+              <input
+                className="grid-date-input"
+                type="date"
+                value={filter.dateFrom}
+                onChange={e => setFilter(f => ({ ...f, dateFrom: e.target.value }))}
+              />
+              <span style={{ color: '#9ca3af', fontSize: '0.85rem' }}>~</span>
+              <input
+                className="grid-date-input"
+                type="date"
+                value={filter.dateTo}
+                onChange={e => setFilter(f => ({ ...f, dateTo: e.target.value }))}
+              />
+              <div className="grid-search-bar">
+                <input
+                  type="text"
+                  placeholder="인터페이스ID"
+                  value={filter.interfaceId}
+                  onChange={e => setFilter(f => ({ ...f, interfaceId: e.target.value }))}
+                  onKeyDown={e => e.key === 'Enter' && load()}
+                />
+                <button className="grid-search-btn" onClick={load}><SearchIcon /></button>
+              </div>
+            </div>
           </div>
-        </div>
 
-        <div className="grid-wrap">
-          <table className="grid-table">
-            <colgroup>
-              <col style={{ width: 80 }} />
-              <col style={{ width: 110 }} />
-              <col style={{ width: 100 }} />
-              <col style={{ width: 100 }} />
-              <col style={{ width: 80 }} />
-              <col style={{ width: 90 }} />
-              <col style={{ width: 80 }} />
-              <col style={{ width: 150 }} />
-            </colgroup>
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>인터페이스ID</th>
-                <th>송신</th>
-                <th>수신</th>
-                <th>방향</th>
-                <th>상태</th>
-                <th>처리(ms)</th>
-                <th>수신일시</th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading ? (
-                <tr><td colSpan={8} className="grid-loading">로딩 중...</td></tr>
-              ) : list.length === 0 ? (
-                <tr><td colSpan={8} className="grid-empty">데이터가 없습니다.</td></tr>
-              ) : list.map(item => (
-                <tr key={item.id} onClick={() => setSelected(item)} style={{ cursor: 'pointer' }}>
-                  <td>{item.id}</td>
-                  <td>{item.interfaceId}</td>
-                  <td>{item.sourceSystem}</td>
-                  <td>{item.targetSystem}</td>
-                  <td>{item.direction}</td>
-                  <td><StatusBadge status={item.status} /></td>
-                  <td style={{ textAlign: 'right' }}>{item.processingMs}</td>
-                  <td>{item.createdAt ? String(item.createdAt).slice(0, 16) : '-'}</td>
+          <div className="grid-wrap">
+            <table className="grid-table">
+              <colgroup>
+                <col style={{ width: 80 }} />
+                <col style={{ width: 110 }} />
+                <col style={{ width: 100 }} />
+                <col style={{ width: 100 }} />
+                <col style={{ width: 80 }} />
+                <col style={{ width: 90 }} />
+                <col style={{ width: 80 }} />
+                <col style={{ width: 150 }} />
+              </colgroup>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>인터페이스ID</th>
+                  <th>송신</th>
+                  <th>수신</th>
+                  <th>방향</th>
+                  <th>상태</th>
+                  <th>처리(ms)</th>
+                  <th>수신일시</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {loading ? (
+                  <tr><td colSpan={8} className="grid-loading">로딩 중...</td></tr>
+                ) : list.length === 0 ? (
+                  <tr><td colSpan={8} className="grid-empty">데이터가 없습니다.</td></tr>
+                ) : list.map(item => (
+                  <tr key={item.id} onClick={() => setSelected(item)} style={{ cursor: 'pointer' }}>
+                    <td>{item.id}</td>
+                    <td>{item.interfaceId}</td>
+                    <td>{item.sourceSystem}</td>
+                    <td>{item.targetSystem}</td>
+                    <td>{item.direction}</td>
+                    <td><StatusBadge status={item.status} /></td>
+                    <td style={{ textAlign: 'right' }}>{item.processingMs}</td>
+                    <td>{item.createdAt ? String(item.createdAt).slice(0, 16) : '-'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
       {selected && (
         <div className="modal-overlay" onClick={() => setSelected(null)}>
           <div className="modal-box" style={{ width: 720, maxHeight: '80vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-              <h3 style={{ margin: 0, fontSize: 15 }}>메시지 상세 (ID: {selected.id})</h3>
-              <button onClick={() => setSelected(null)} style={{ background: 'none', border: 'none', fontSize: 20, cursor: 'pointer' }}>×</button>
+            <div className="modal-header">
+              <h3 className="modal-title">메시지 상세 (ID: {selected.id})</h3>
+              <button className="modal-close" onClick={() => setSelected(null)}>✕</button>
             </div>
+            <div className="modal-body">
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 20px', marginBottom: 16 }}>
+                {[
+                  ['인터페이스', selected.interfaceId],
+                  ['상태',       <StatusBadge status={selected.status} />],
+                  ['송신',       selected.sourceSystem],
+                  ['수신',       selected.targetSystem],
+                  ['처리시간',   `${selected.processingMs}ms`],
+                  ['수신일시',   selected.createdAt ? String(selected.createdAt).slice(0, 16) : '-'],
+                ].map(([k, v]) => (
+                  <div key={k} style={{ fontSize: '0.85rem' }}>
+                    <span style={{ color: '#6b7280', fontWeight: 600, marginRight: 6 }}>{k}</span>{v}
+                  </div>
+                ))}
+              </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16, fontSize: 13 }}>
-              {[
-                ['인터페이스', selected.interfaceId],
-                ['상태',       <StatusBadge status={selected.status} />],
-                ['송신',       selected.sourceSystem],
-                ['수신',       selected.targetSystem],
-                ['처리시간',   `${selected.processingMs}ms`],
-                ['수신일시',   selected.createdAt ? String(selected.createdAt).slice(0, 16) : '-'],
-              ].map(([k, v]) => (
-                <div key={k}><span style={{ color: '#6b7280', marginRight: 6 }}>{k}:</span>{v}</div>
-              ))}
-            </div>
+              {selected.errorMessage && (
+                <div className="eai-alert danger">{selected.errorMessage}</div>
+              )}
 
-            {selected.errorMessage && (
-              <div className="eai-alert danger" style={{ marginBottom: 12 }}>{selected.errorMessage}</div>
-            )}
-
-            <div style={{ marginBottom: 12 }}>
-              <p style={{ fontSize: 12, fontWeight: 600, color: '#374151', marginBottom: 4 }}>요청 메시지</p>
+              <p style={{ fontSize: '0.78rem', fontWeight: 600, color: '#4b5563', margin: '12px 0 4px' }}>요청 메시지</p>
               <MessageViewer value={selected.requestBody} />
-            </div>
-            <div style={{ marginBottom: 12 }}>
-              <p style={{ fontSize: 12, fontWeight: 600, color: '#374151', marginBottom: 4 }}>응답 메시지</p>
+
+              <p style={{ fontSize: '0.78rem', fontWeight: 600, color: '#4b5563', margin: '12px 0 4px' }}>응답 메시지</p>
               <MessageViewer value={selected.responseBody} />
             </div>
 
             {['FAIL', 'DLQ'].includes(selected.status) && (
-              <div style={{ textAlign: 'right' }}>
-                <button className="grid-add-btn" onClick={handleRetry} disabled={retrying}>
+              <div className="modal-footer">
+                <button className="modal-btn-save" onClick={handleRetry} disabled={retrying}>
                   {retrying ? '처리 중...' : '재처리'}
                 </button>
+                <button className="modal-btn-cancel" onClick={() => setSelected(null)}>닫기</button>
+              </div>
+            )}
+            {!['FAIL', 'DLQ'].includes(selected.status) && (
+              <div className="modal-footer">
+                <button className="modal-btn-cancel" onClick={() => setSelected(null)}>닫기</button>
               </div>
             )}
           </div>

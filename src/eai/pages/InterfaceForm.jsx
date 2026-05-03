@@ -75,11 +75,12 @@ function InterfaceForm() {
       .finally(() => setTestLoading(false))
   }
 
-  if (loading) return <div className="dashboard-area"><p>로딩 중...</p></div>
+  if (loading) return <div className="content-area"><div className="content-body"><p>로딩 중...</p></div></div>
 
   return (
-    <div className="dashboard-area">
-      <h2 style={{ fontSize: 16, fontWeight: 700, marginBottom: 16 }}>{isEdit ? '인터페이스 수정' : '인터페이스 등록'}</h2>
+    <div className="content-area">
+      <div className="content-body">
+      <h2 style={{ fontSize: '1.05rem', fontWeight: 700, marginBottom: 16, color: '#1e2530' }}>{isEdit ? '인터페이스 수정' : '인터페이스 등록'}</h2>
 
       <div className="wizard-steps">
         {STEPS.map((s, i) => (
@@ -95,38 +96,35 @@ function InterfaceForm() {
       {step === 0 && (
         <div className="eai-form-section">
           <h4>기본 정보</h4>
-          <div className="form-grid">
-            {[
-              ['interfaceId', '인터페이스ID', 'text', 'IF-0001'],
-              ['name',        '인터페이스명', 'text', ''],
-              ['sourceSystem','송신시스템',   'text', ''],
-              ['targetSystem','수신시스템',   'text', ''],
-            ].map(([key, label, type, placeholder]) => (
-              <div className="form-row" key={key}>
-                <label>{label}</label>
-                <input
-                  type={type}
-                  value={form[key]}
-                  placeholder={placeholder}
-                  onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))}
-                />
-              </div>
-            ))}
-            <div className="form-row">
-              <label>어댑터 유형</label>
-              <select value={form.adapterType} onChange={e => setForm(f => ({ ...f, adapterType: e.target.value }))}>
-                {ADAPTER_TYPES.map(t => <option key={t}>{t}</option>)}
-              </select>
-            </div>
-            <div className="form-row">
-              <label>설명</label>
-              <textarea
-                rows={3}
-                value={form.description}
-                onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
-                style={{ width: '100%', padding: '4px 8px', fontSize: 13, border: '1px solid #d1d5db', borderRadius: 4, resize: 'vertical' }}
+          {[
+            ['interfaceId', '인터페이스ID', 'text', 'IF-0001'],
+            ['name',        '인터페이스명', 'text', ''],
+            ['sourceSystem','송신시스템',   'text', ''],
+            ['targetSystem','수신시스템',   'text', ''],
+          ].map(([key, label, type, placeholder]) => (
+            <div className="modal-field" key={key}>
+              <label>{label}</label>
+              <input
+                type={type}
+                value={form[key]}
+                placeholder={placeholder}
+                onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))}
               />
             </div>
+          ))}
+          <div className="modal-field">
+            <label>어댑터 유형</label>
+            <select value={form.adapterType} onChange={e => setForm(f => ({ ...f, adapterType: e.target.value }))}>
+              {ADAPTER_TYPES.map(t => <option key={t}>{t}</option>)}
+            </select>
+          </div>
+          <div className="modal-field modal-field-v">
+            <label>설명</label>
+            <textarea
+              rows={3}
+              value={form.description}
+              onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
+            />
           </div>
         </div>
       )}
@@ -168,7 +166,7 @@ function InterfaceForm() {
                 rows={5}
                 value={testPayload}
                 onChange={e => setTestPayload(e.target.value)}
-                style={{ width: '100%', fontFamily: 'monospace', fontSize: 12, padding: 8, border: '1px solid #d1d5db', borderRadius: 4, boxSizing: 'border-box' }}
+                style={{ width: '100%', fontFamily: 'monospace', fontSize: '0.83rem', padding: 8, border: '1px solid #d1d5db', borderRadius: 6, boxSizing: 'border-box', outline: 'none' }}
               />
             </div>
             <button className="grid-search-btn" onClick={handleTest} disabled={testLoading}>
@@ -185,15 +183,16 @@ function InterfaceForm() {
 
       <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 16 }}>
         <div>
-          {step > 0 && <button className="grid-search-btn" onClick={() => setStep(s => s - 1)}>이전</button>}
+          {step > 0 && <button className="modal-btn-cancel" onClick={() => setStep(s => s - 1)}>이전</button>}
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
-          <button className="grid-search-btn" onClick={() => navigate('/eai/interfaces')}>취소</button>
+          <button className="modal-btn-cancel" onClick={() => navigate('/eai/interfaces')}>취소</button>
           {step < STEPS.length - 1
-            ? <button className="grid-add-btn" onClick={() => setStep(s => s + 1)}>다음</button>
-            : <button className="grid-add-btn" onClick={handleSave} disabled={saving}>{saving ? '저장 중...' : '저장'}</button>
+            ? <button className="modal-btn-save" onClick={() => setStep(s => s + 1)}>다음</button>
+            : <button className="modal-btn-save" onClick={handleSave} disabled={saving}>{saving ? '저장 중...' : '저장'}</button>
           }
         </div>
+      </div>
       </div>
     </div>
   )

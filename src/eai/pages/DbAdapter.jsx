@@ -177,31 +177,34 @@ function DbAdapter() {
   }
 
   return (
-    <div className="dashboard-area">
-      <div className="grid-container">
-        <div className="grid-toolbar">
-          <span className="grid-title">DB 어댑터 관리</span>
-          <div className="grid-toolbar-right">
-            <select
-              className="grid-search-input"
-              value={filter.dbType}
-              onChange={e => setFilter(f => ({ ...f, dbType: e.target.value }))}
-            >
-              <option value="">전체 DB 유형</option>
-              {DB_TYPES.slice(1).map(t => <option key={t} value={t}>{t}</option>)}
-            </select>
-            <select
-              className="grid-search-input"
-              value={filter.direction}
-              onChange={e => setFilter(f => ({ ...f, direction: e.target.value }))}
-            >
-              <option value="">전체 방향</option>
-              {DIRECTIONS.slice(1).map(d => <option key={d} value={d}>{d}</option>)}
-            </select>
-            <button className="grid-search-btn" onClick={() => load(filter)}>검색</button>
-            <button className="grid-add-btn" onClick={openAdd}>+ 등록</button>
+    <div className="content-area">
+      <div className="content-body">
+        <div className="grid-container">
+          <div className="grid-toolbar">
+            <div className="grid-toolbar-left">
+              <span className="grid-title">DB 어댑터 관리</span>
+            </div>
+            <div className="grid-toolbar-right">
+              <select
+                className="site-select"
+                value={filter.dbType}
+                onChange={e => setFilter(f => ({ ...f, dbType: e.target.value }))}
+              >
+                <option value="">전체 DB 유형</option>
+                {DB_TYPES.slice(1).map(t => <option key={t} value={t}>{t}</option>)}
+              </select>
+              <select
+                className="site-select"
+                value={filter.direction}
+                onChange={e => setFilter(f => ({ ...f, direction: e.target.value }))}
+              >
+                <option value="">전체 방향</option>
+                {DIRECTIONS.slice(1).map(d => <option key={d} value={d}>{d}</option>)}
+              </select>
+              <button className="grid-search-btn" onClick={() => load(filter)}>검색</button>
+              <button className="grid-add-btn" onClick={openAdd}>+ 등록</button>
+            </div>
           </div>
-        </div>
 
         <div className="grid-wrap">
           <table className="grid-table">
@@ -262,6 +265,7 @@ function DbAdapter() {
           onSave={handleSave}
         />
       )}
+      </div>
     </div>
   )
 }

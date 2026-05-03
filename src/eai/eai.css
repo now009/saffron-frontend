@@ -79,10 +79,48 @@
   background: #fff;
   border: 1px solid #e2e8f0;
   border-radius: 8px;
-  padding: 16px 20px;
+  padding: 20px 24px;
   margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
-.eai-form-section h4 { font-size: 13px; font-weight: 600; color: #374151; margin: 0 0 12px; }
+.eai-form-section h4 {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #1e2530;
+  margin: 0;
+}
+
+/* modal-field textarea (grid.css modal-field에 textarea 추가) */
+.modal-field textarea {
+  flex: 1;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 0.85rem;
+  color: #1e2530;
+  outline: none;
+  background: #ffffff;
+  transition: border-color 0.12s;
+  resize: vertical;
+}
+.modal-field textarea:focus { border-color: #4f7ef8; }
+
+/* 날짜 입력 (toolbar용) */
+.grid-date-input {
+  background: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  color: #374151;
+  font-size: 0.83rem;
+  padding: 7px 10px;
+  outline: none;
+  cursor: pointer;
+  height: 34px;
+  box-sizing: border-box;
+}
+.grid-date-input:focus { border-color: #4f7ef8; }
 
 .mapping-table { width: 100%; border-collapse: collapse; font-size: 13px; }
 .mapping-table th {
@@ -115,24 +153,3 @@
 }
 .eai-toggle-btn.on  { border-color: #16a34a; color: #16a34a; }
 .eai-toggle-btn.off { border-color: #dc2626; color: #dc2626; }
-
-.form-grid { display: flex; flex-direction: column; gap: 8px; }
-.form-row { display: flex; align-items: flex-start; gap: 12px; }
-.form-row label { flex: 0 0 110px; font-size: 13px; font-weight: 500; color: #374151; padding-top: 6px; }
-.form-row input,
-.form-row select,
-.form-row textarea {
-  flex: 1;
-  border: 1px solid #d1d5db;
-  border-radius: 4px;
-  padding: 5px 8px;
-  font-size: 13px;
-  box-sizing: border-box;
-}
-.form-row input:focus,
-.form-row select:focus,
-.form-row textarea:focus {
-  outline: none;
-  border-color: #2563eb;
-  box-shadow: 0 0 0 2px rgba(37,99,235,.15);
-}
