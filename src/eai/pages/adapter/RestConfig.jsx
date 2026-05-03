@@ -1,6 +1,44 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import eaiApi from '../../api/eaiApi'
 import '../../eai.css'
+
+function ActionMenu({ row, onEdit, onDelete }) {
+  const [open, setOpen]     = useState(false)
+  const [openUp, setOpenUp] = useState(false)
+  const ref    = useRef(null)
+  const btnRef = useRef(null)
+
+  const toggle = () => {
+    if (!open && btnRef.current) {
+      const wrap      = btnRef.current.closest('.grid-wrap')
+      const bottom    = wrap ? wrap.getBoundingClientRect().bottom : window.innerHeight
+      const btnBottom = btnRef.current.getBoundingClientRect().bottom
+      setOpenUp(bottom - btnBottom < 110)
+    }
+    setOpen(v => !v)
+  }
+
+  useEffect(() => {
+    if (!open) return
+    const close = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false) }
+    document.addEventListener('mousedown', close)
+    return () => document.removeEventListener('mousedown', close)
+  }, [open])
+
+  return (
+    <div className="action-menu" ref={ref}>
+      <button ref={btnRef} className="action-btn" onClick={e => { e.stopPropagation(); toggle() }}>
+        <svg viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
+      </button>
+      {open && (
+        <div className={`action-dropdown ${openUp ? 'up' : ''}`}>
+          <button className="action-item edit"   onClick={() => { onEdit(row);   setOpen(false) }}>수정</button>
+          <button className="action-item delete" onClick={() => { onDelete(row); setOpen(false) }}>삭제</button>
+        </div>
+      )}
+    </div>
+  )
+}
 
 const HTTP_METHODS = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD']
 const AUTH_TYPES   = ['NONE', 'BEARER', 'API_KEY', 'BASIC', 'OAUTH2']
@@ -55,8 +93,7 @@ function RestConfig() {
     finally { setSaving(false) }
   }
 
-  const handleDelete = async (e, item) => {
-    e.stopPropagation()
+  const handleDelete = async (item) => {
     if (!window.confirm(`REST 설정 [${item.configName}]을 삭제하시겠습니까?`)) return
     await eaiApi.restConfig.delete(item.id).catch(() => alert('삭제 중 오류가 발생했습니다.'))
     load()
@@ -106,7 +143,7 @@ function RestConfig() {
                 <col style={{ width: 70 }} />
                 <col style={{ width: 80 }} />
                 <col style={{ width: 60 }} />
-                <col style={{ width: 80 }} />
+                <col style={{ width: 48 }} />
               </colgroup>
               <thead>
                 <tr>
@@ -116,7 +153,7 @@ function RestConfig() {
                   <th>Method</th>
                   <th>인증유형</th>
                   <th>활성</th>
-                  <th>관리</th>
+                  <th className="action-cell"></th>
                 </tr>
               </thead>
               <tbody>
@@ -125,7 +162,7 @@ function RestConfig() {
                 ) : list.length === 0 ? (
                   <tr><td colSpan={7} className="grid-empty">데이터가 없습니다.</td></tr>
                 ) : list.map(item => (
-                  <tr key={item.id} onClick={() => openEdit(item)} style={{ cursor: 'pointer' }}>
+                  <tr key={item.id}>
                     <td>{item.interfaceId}</td>
                     <td>{item.configName}</td>
                     <td style={{ fontSize: 12, color: '#6b7280' }}>{item.url}</td>
@@ -136,9 +173,8 @@ function RestConfig() {
                         {item.isActive ? 'Y' : 'N'}
                       </span>
                     </td>
-                    <td style={{ textAlign: 'center' }}>
-                      <button className="grid-search-btn" style={{ fontSize: 11, padding: '3px 8px' }}
-                        onClick={e => handleDelete(e, item)}>삭제</button>
+                    <td className="action-cell">
+                      <ActionMenu row={item} onEdit={openEdit} onDelete={handleDelete} />
                     </td>
                   </tr>
                 ))}
@@ -150,87 +186,91 @@ function RestConfig() {
 
       {modal && (
         <div className="modal-overlay" onClick={closeModal}>
-          <div className="modal-box" style={{ width: 640 }} onClick={e => e.stopPropagation()}>
+          <div className="modal-box" style={{ width: 960 }} onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <span>{modal === 'edit' ? 'REST 설정 수정' : 'REST 설정 등록'}</span>
               <button onClick={closeModal} style={{ background: 'none', border: 'none', fontSize: 18, cursor: 'pointer' }}>×</button>
             </div>
-            <div className="modal-body">
-              <div className="eai-form-section">
-                <h4>기본 정보</h4>
-                {fv('interfaceId', '인터페이스ID', 'IF-0001')}
-                {fv('configName',  '설정명')}
-                {fv('url',         'URL', 'https://api.example.com/data')}
-                <div className="modal-field">
-                  <label>HTTP Method</label>
-                  <select value={form.httpMethod}
-                    onChange={e => setForm(f => ({ ...f, httpMethod: e.target.value }))}>
-                    {HTTP_METHODS.map(m => <option key={m} value={m}>{m}</option>)}
-                  </select>
+            <div className="modal-body" style={{ display: 'flex', gap: 16, alignItems: 'flex-start' }}>
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <div className="eai-form-section">
+                  <h4>기본 정보</h4>
+                  {fv('interfaceId', '인터페이스ID', 'IF-0001')}
+                  {fv('configName',  '설정명')}
+                  {fv('url',         'URL', 'https://api.example.com/data')}
+                  <div className="modal-field">
+                    <label>HTTP Method</label>
+                    <select value={form.httpMethod}
+                      onChange={e => setForm(f => ({ ...f, httpMethod: e.target.value }))}>
+                      {HTTP_METHODS.map(m => <option key={m} value={m}>{m}</option>)}
+                    </select>
+                  </div>
+                  {fv('contentType',      'Content-Type')}
+                  {fv('timeoutMs',        '타임아웃(ms)')}
+                  {fv('successHttpCodes', '성공 HTTP 코드')}
+                  {fv('responsePath',     '응답 경로 ($.data)')}
                 </div>
-                {fv('contentType',      'Content-Type')}
-                {fv('timeoutMs',        '타임아웃(ms)')}
-                {fv('successHttpCodes', '성공 HTTP 코드')}
-                {fv('responsePath',     '응답 경로 ($.data)')}
-              </div>
-              <div className="eai-form-section">
-                <h4>인증 설정</h4>
-                <div className="modal-field">
-                  <label>인증 유형</label>
-                  <select value={form.authType}
-                    onChange={e => setForm(f => ({ ...f, authType: e.target.value }))}>
-                    {AUTH_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
-                  </select>
-                </div>
-                {form.authType !== 'NONE' && form.authType !== 'OAUTH2' && (
-                  fp('authValue', form.authType === 'BASIC' ? 'Basic 자격증명' : form.authType === 'API_KEY' ? 'API Key 값' : 'Bearer 토큰')
-                )}
-                {form.authType === 'API_KEY' && fv('apiKeyHeader', 'API Key 헤더명', 'X-API-KEY')}
-                {form.authType === 'OAUTH2' && <>
-                  {fv('tokenUrl',     'Token URL')}
-                  {fv('clientId',     'Client ID')}
-                  {fp('clientSecret', 'Client Secret')}
-                  {fv('tokenScope',   'Scope')}
-                </>}
-              </div>
-              <div className="eai-form-section">
-                <h4>요청 / 응답 설정</h4>
-                <div className="modal-field">
-                  <label>요청 헤더 (JSON)</label>
-                  <textarea rows={2} value={form.requestHeaders ?? ''}
-                    placeholder='[{"key":"X-Tenant","value":"T001"}]'
-                    onChange={e => setForm(f => ({ ...f, requestHeaders: e.target.value }))} />
-                </div>
-                <div className="modal-field">
-                  <label>요청 바디 템플릿</label>
-                  <textarea rows={4} value={form.requestTemplate ?? ''}
-                    onChange={e => setForm(f => ({ ...f, requestTemplate: e.target.value }))} />
+                <div className="eai-form-section">
+                  <h4>인증 설정</h4>
+                  <div className="modal-field">
+                    <label>인증 유형</label>
+                    <select value={form.authType}
+                      onChange={e => setForm(f => ({ ...f, authType: e.target.value }))}>
+                      {AUTH_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                    </select>
+                  </div>
+                  {form.authType !== 'NONE' && form.authType !== 'OAUTH2' && (
+                    fp('authValue', form.authType === 'BASIC' ? 'Basic 자격증명' : form.authType === 'API_KEY' ? 'API Key 값' : 'Bearer 토큰')
+                  )}
+                  {form.authType === 'API_KEY' && fv('apiKeyHeader', 'API Key 헤더명', 'X-API-KEY')}
+                  {form.authType === 'OAUTH2' && <>
+                    {fv('tokenUrl',     'Token URL')}
+                    {fv('clientId',     'Client ID')}
+                    {fp('clientSecret', 'Client Secret')}
+                    {fv('tokenScope',   'Scope')}
+                  </>}
                 </div>
               </div>
-              <div className="eai-form-section">
-                <h4>SSL / 프록시</h4>
-                <div className="modal-field">
-                  <label>SSL 검증</label>
-                  <select value={form.sslVerify ? 'true' : 'false'}
-                    onChange={e => setForm(f => ({ ...f, sslVerify: e.target.value === 'true' }))}>
-                    <option value="true">검증</option>
-                    <option value="false">무시</option>
-                  </select>
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <div className="eai-form-section">
+                  <h4>요청 / 응답 설정</h4>
+                  <div className="modal-field">
+                    <label>요청 헤더 (JSON)</label>
+                    <textarea rows={2} value={form.requestHeaders ?? ''}
+                      placeholder='[{"key":"X-Tenant","value":"T001"}]'
+                      onChange={e => setForm(f => ({ ...f, requestHeaders: e.target.value }))} />
+                  </div>
+                  <div className="modal-field">
+                    <label>요청 바디 템플릿</label>
+                    <textarea rows={5} value={form.requestTemplate ?? ''}
+                      onChange={e => setForm(f => ({ ...f, requestTemplate: e.target.value }))} />
+                  </div>
                 </div>
-                {fv('proxyHost', '프록시 호스트')}
-                {fv('proxyPort', '프록시 포트')}
-                {fv('proxyUser', '프록시 사용자명')}
-                {fp('proxyPassword', '프록시 비밀번호')}
-              </div>
-              <div className="eai-form-section">
-                <h4>상태</h4>
-                <div className="modal-field">
-                  <label>활성화</label>
-                  <select value={form.isActive ? 'true' : 'false'}
-                    onChange={e => setForm(f => ({ ...f, isActive: e.target.value === 'true' }))}>
-                    <option value="true">활성</option>
-                    <option value="false">비활성</option>
-                  </select>
+                <div className="eai-form-section">
+                  <h4>SSL / 프록시</h4>
+                  <div className="modal-field">
+                    <label>SSL 검증</label>
+                    <select value={form.sslVerify ? 'true' : 'false'}
+                      onChange={e => setForm(f => ({ ...f, sslVerify: e.target.value === 'true' }))}>
+                      <option value="true">검증</option>
+                      <option value="false">무시</option>
+                    </select>
+                  </div>
+                  {fv('proxyHost', '프록시 호스트')}
+                  {fv('proxyPort', '프록시 포트')}
+                  {fv('proxyUser', '프록시 사용자명')}
+                  {fp('proxyPassword', '프록시 비밀번호')}
+                </div>
+                <div className="eai-form-section">
+                  <h4>상태</h4>
+                  <div className="modal-field">
+                    <label>활성화</label>
+                    <select value={form.isActive ? 'true' : 'false'}
+                      onChange={e => setForm(f => ({ ...f, isActive: e.target.value === 'true' }))}>
+                      <option value="true">활성</option>
+                      <option value="false">비활성</option>
+                    </select>
+                  </div>
                 </div>
               </div>
             </div>

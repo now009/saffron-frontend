@@ -476,9 +476,11 @@ table.grid-table {
   border-radius: 12px;
   width: 460px;
   max-width: 95vw;
+  max-height: 92vh;
   box-shadow: 0 8px 40px rgba(0, 0, 0, 0.18);
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 .modal-header {
@@ -517,6 +519,8 @@ table.grid-table {
   display: flex;
   flex-direction: column;
   gap: 14px;
+  overflow-y: auto;
+  flex: 1;
 }
 
 .modal-field-row {

@@ -1,6 +1,44 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import eaiApi from '../../api/eaiApi'
 import '../../eai.css'
+
+function ActionMenu({ row, onEdit, onDelete }) {
+  const [open, setOpen]     = useState(false)
+  const [openUp, setOpenUp] = useState(false)
+  const ref    = useRef(null)
+  const btnRef = useRef(null)
+
+  const toggle = () => {
+    if (!open && btnRef.current) {
+      const wrap      = btnRef.current.closest('.grid-wrap')
+      const bottom    = wrap ? wrap.getBoundingClientRect().bottom : window.innerHeight
+      const btnBottom = btnRef.current.getBoundingClientRect().bottom
+      setOpenUp(bottom - btnBottom < 110)
+    }
+    setOpen(v => !v)
+  }
+
+  useEffect(() => {
+    if (!open) return
+    const close = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false) }
+    document.addEventListener('mousedown', close)
+    return () => document.removeEventListener('mousedown', close)
+  }, [open])
+
+  return (
+    <div className="action-menu" ref={ref}>
+      <button ref={btnRef} className="action-btn" onClick={e => { e.stopPropagation(); toggle() }}>
+        <svg viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
+      </button>
+      {open && (
+        <div className={`action-dropdown ${openUp ? 'up' : ''}`}>
+          <button className="action-item edit"   onClick={() => { onEdit(row);   setOpen(false) }}>수정</button>
+          <button className="action-item delete" onClick={() => { onDelete(row); setOpen(false) }}>삭제</button>
+        </div>
+      )}
+    </div>
+  )
+}
 
 const DB_TYPES = ['POSTGRESQL', 'ORACLE', 'MSSQL', 'MYSQL', 'MARIADB', 'H2']
 
@@ -50,8 +88,7 @@ function Datasource() {
     finally { setSaving(false) }
   }
 
-  const handleDelete = async (e, item) => {
-    e.stopPropagation()
+  const handleDelete = async (item) => {
     if (!window.confirm(`DataSource [${item.datasourceId}]를 삭제하시겠습니까?`)) return
     await eaiApi.datasource.delete(item.id).catch(() => alert('삭제 중 오류가 발생했습니다.'))
     load()
@@ -109,7 +146,7 @@ function Datasource() {
                 <col style={{ width: 280 }} />
                 <col style={{ width: 100 }} />
                 <col style={{ width: 60 }} />
-                <col style={{ width: 80 }} />
+                <col style={{ width: 48 }} />
               </colgroup>
               <thead>
                 <tr>
@@ -119,7 +156,7 @@ function Datasource() {
                   <th>JDBC URL</th>
                   <th>사용자명</th>
                   <th>활성</th>
-                  <th>관리</th>
+                  <th className="action-cell"></th>
                 </tr>
               </thead>
               <tbody>
@@ -128,7 +165,7 @@ function Datasource() {
                 ) : list.length === 0 ? (
                   <tr><td colSpan={7} className="grid-empty">데이터가 없습니다.</td></tr>
                 ) : list.map(item => (
-                  <tr key={item.id} onClick={() => openEdit(item)} style={{ cursor: 'pointer' }}>
+                  <tr key={item.id}>
                     <td>{item.datasourceId}</td>
                     <td>{item.datasourceName}</td>
                     <td>{item.dbType}</td>
@@ -139,9 +176,8 @@ function Datasource() {
                         {item.isActive ? 'Y' : 'N'}
                       </span>
                     </td>
-                    <td style={{ textAlign: 'center' }}>
-                      <button className="grid-search-btn" style={{ fontSize: 11, padding: '3px 8px' }}
-                        onClick={e => handleDelete(e, item)}>삭제</button>
+                    <td className="action-cell">
+                      <ActionMenu row={item} onEdit={openEdit} onDelete={handleDelete} />
                     </td>
                   </tr>
                 ))}
@@ -153,54 +189,58 @@ function Datasource() {
 
       {modal && (
         <div className="modal-overlay" onClick={closeModal}>
-          <div className="modal-box" style={{ width: 620 }} onClick={e => e.stopPropagation()}>
+          <div className="modal-box" style={{ width: 880 }} onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <span>{modal === 'edit' ? 'DataSource 수정' : 'DataSource 등록'}</span>
               <button onClick={closeModal} style={{ background: 'none', border: 'none', fontSize: 18, cursor: 'pointer' }}>×</button>
             </div>
-            <div className="modal-body">
-              <div className="eai-form-section">
-                <h4>기본 정보</h4>
-                {f('datasourceId',   'DataSource ID', 'text', 'DS_ERP')}
-                {f('datasourceName', 'DataSource명')}
-                <div className="modal-field">
-                  <label>DB 유형</label>
-                  <select value={form.dbType} onChange={e => setForm(f => ({ ...f, dbType: e.target.value }))}>
-                    {DB_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
-                  </select>
+            <div className="modal-body" style={{ display: 'flex', gap: 16, alignItems: 'flex-start' }}>
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <div className="eai-form-section">
+                  <h4>기본 정보</h4>
+                  {f('datasourceId',   'DataSource ID', 'text', 'DS_ERP')}
+                  {f('datasourceName', 'DataSource명')}
+                  <div className="modal-field">
+                    <label>DB 유형</label>
+                    <select value={form.dbType} onChange={e => setForm(f => ({ ...f, dbType: e.target.value }))}>
+                      {DB_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                    </select>
+                  </div>
+                  {f('jdbcUrl',       'JDBC URL',     'text', 'jdbc:mariadb://host:3306/dbname')}
+                  {f('dbUsername',    'DB 사용자명')}
+                  {f('dbPassword',    'DB 비밀번호',   'password')}
+                  {f('driverClass',   'Driver Class', 'text', 'org.mariadb.jdbc.Driver')}
+                  {f('defaultSchema', '기본 스키마')}
                 </div>
-                {f('jdbcUrl',     'JDBC URL',   'text', 'jdbc:mariadb://host:3306/dbname')}
-                {f('dbUsername',  'DB 사용자명')}
-                {f('dbPassword',  'DB 비밀번호', 'password')}
-                {f('driverClass', 'Driver Class', 'text', 'org.mariadb.jdbc.Driver')}
-                {f('defaultSchema', '기본 스키마')}
               </div>
-              <div className="eai-form-section">
-                <h4>풀 설정</h4>
-                {fi('poolMinSize',     '최소 풀 크기')}
-                {fi('poolMaxSize',     '최대 풀 크기')}
-                {fi('poolTimeoutMs',   '연결 대기 타임아웃(ms)')}
-                {fi('queryTimeoutSec', '쿼리 타임아웃(초)')}
-              </div>
-              <div className="eai-form-section">
-                <h4>추가 설정</h4>
-                <div className="modal-field">
-                  <label>추가 JDBC 속성 (JSON)</label>
-                  <textarea rows={3} value={form.connectionProps ?? ''}
-                    onChange={e => setForm(f => ({ ...f, connectionProps: e.target.value }))} />
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <div className="eai-form-section">
+                  <h4>풀 설정</h4>
+                  {fi('poolMinSize',     '최소 풀 크기')}
+                  {fi('poolMaxSize',     '최대 풀 크기')}
+                  {fi('poolTimeoutMs',   '연결 대기 타임아웃(ms)')}
+                  {fi('queryTimeoutSec', '쿼리 타임아웃(초)')}
                 </div>
-                <div className="modal-field">
-                  <label>설명</label>
-                  <textarea rows={2} value={form.description ?? ''}
-                    onChange={e => setForm(f => ({ ...f, description: e.target.value }))} />
-                </div>
-                <div className="modal-field">
-                  <label>활성화</label>
-                  <select value={form.isActive ? 'true' : 'false'}
-                    onChange={e => setForm(f => ({ ...f, isActive: e.target.value === 'true' }))}>
-                    <option value="true">활성</option>
-                    <option value="false">비활성</option>
-                  </select>
+                <div className="eai-form-section">
+                  <h4>추가 설정</h4>
+                  <div className="modal-field">
+                    <label>추가 JDBC 속성 (JSON)</label>
+                    <textarea rows={3} value={form.connectionProps ?? ''}
+                      onChange={e => setForm(f => ({ ...f, connectionProps: e.target.value }))} />
+                  </div>
+                  <div className="modal-field">
+                    <label>설명</label>
+                    <textarea rows={2} value={form.description ?? ''}
+                      onChange={e => setForm(f => ({ ...f, description: e.target.value }))} />
+                  </div>
+                  <div className="modal-field">
+                    <label>활성화</label>
+                    <select value={form.isActive ? 'true' : 'false'}
+                      onChange={e => setForm(f => ({ ...f, isActive: e.target.value === 'true' }))}>
+                      <option value="true">활성</option>
+                      <option value="false">비활성</option>
+                    </select>
+                  </div>
                 </div>
               </div>
             </div>
