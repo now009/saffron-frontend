@@ -33,12 +33,33 @@ const eaiApi = {
     run:    (id)         => fetch(`${base}/eai/api/schedules/${id}/run`, { method: 'POST', headers: h() }).then(r => r.json()),
     toggle: (id, active) => fetch(`${base}/eai/api/schedules/${id}/toggle`, { method: 'PATCH', headers: h(), body: JSON.stringify({ isActive: active }) }).then(r => r.json()),
   },
-  dbAdapter: {
-    list:   (params = {}) => fetch(`${base}/eai/db-adapters?${qs(params)}`, { headers: serverConfig.token.authHeader() }).then(r => r.json()),
-    get:    (id)          => fetch(`${base}/eai/db-adapters/${id}`, { headers: serverConfig.token.authHeader() }).then(r => r.json()),
-    create: (data)        => fetch(`${base}/eai/db-adapters`, { method: 'POST', headers: h(), body: JSON.stringify(data) }).then(r => r.json()),
-    update: (id, data)    => fetch(`${base}/eai/db-adapters/${id}`, { method: 'PUT',  headers: h(), body: JSON.stringify(data) }).then(r => r.json()),
-    delete: (id)          => fetch(`${base}/eai/db-adapters/${id}`, { method: 'DELETE', headers: h() }).then(r => r.json()),
+  datasource: {
+    list:   (params = {}) => fetch(`${base}/eai/datasources?${qs(params)}`, { headers: serverConfig.token.authHeader() }).then(r => r.json()),
+    get:    (id)          => fetch(`${base}/eai/datasources/${id}`, { headers: serverConfig.token.authHeader() }).then(r => r.json()),
+    create: (data)        => fetch(`${base}/eai/datasources`, { method: 'POST', headers: h(), body: JSON.stringify(data) }).then(r => r.json()),
+    update: (id, data)    => fetch(`${base}/eai/datasources/${id}`, { method: 'PUT', headers: h(), body: JSON.stringify(data) }).then(r => r.json()),
+    delete: (id)          => fetch(`${base}/eai/datasources/${id}`, { method: 'DELETE', headers: h() }).then(r => r.json()),
+  },
+  dbAdapterConfig: {
+    list:   (params = {}) => fetch(`${base}/eai/db-adapter-configs?${qs(params)}`, { headers: serverConfig.token.authHeader() }).then(r => r.json()),
+    get:    (id)          => fetch(`${base}/eai/db-adapter-configs/${id}`, { headers: serverConfig.token.authHeader() }).then(r => r.json()),
+    create: (data)        => fetch(`${base}/eai/db-adapter-configs`, { method: 'POST', headers: h(), body: JSON.stringify(data) }).then(r => r.json()),
+    update: (id, data)    => fetch(`${base}/eai/db-adapter-configs/${id}`, { method: 'PUT', headers: h(), body: JSON.stringify(data) }).then(r => r.json()),
+    delete: (id)          => fetch(`${base}/eai/db-adapter-configs/${id}`, { method: 'DELETE', headers: h() }).then(r => r.json()),
+  },
+  restConfig: {
+    list:   (params = {}) => fetch(`${base}/eai/rest-configs?${qs(params)}`, { headers: serverConfig.token.authHeader() }).then(r => r.json()),
+    get:    (id)          => fetch(`${base}/eai/rest-configs/${id}`, { headers: serverConfig.token.authHeader() }).then(r => r.json()),
+    create: (data)        => fetch(`${base}/eai/rest-configs`, { method: 'POST', headers: h(), body: JSON.stringify(data) }).then(r => r.json()),
+    update: (id, data)    => fetch(`${base}/eai/rest-configs/${id}`, { method: 'PUT', headers: h(), body: JSON.stringify(data) }).then(r => r.json()),
+    delete: (id)          => fetch(`${base}/eai/rest-configs/${id}`, { method: 'DELETE', headers: h() }).then(r => r.json()),
+  },
+  soapConfig: {
+    list:   (params = {}) => fetch(`${base}/eai/soap-configs?${qs(params)}`, { headers: serverConfig.token.authHeader() }).then(r => r.json()),
+    get:    (id)          => fetch(`${base}/eai/soap-configs/${id}`, { headers: serverConfig.token.authHeader() }).then(r => r.json()),
+    create: (data)        => fetch(`${base}/eai/soap-configs`, { method: 'POST', headers: h(), body: JSON.stringify(data) }).then(r => r.json()),
+    update: (id, data)    => fetch(`${base}/eai/soap-configs/${id}`, { method: 'PUT', headers: h(), body: JSON.stringify(data) }).then(r => r.json()),
+    delete: (id)          => fetch(`${base}/eai/soap-configs/${id}`, { method: 'DELETE', headers: h() }).then(r => r.json()),
   },
 }
 
