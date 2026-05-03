@@ -162,6 +162,39 @@
   cursor: default;
 }
 
+.sidebar-subgroup-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 7px 18px 7px 28px;
+  background: none;
+  border: none;
+  font-size: 0.83rem;
+  font-weight: 600;
+  color: #374151;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+
+.sidebar-subgroup-header:hover {
+  background: #f5f7ff;
+  color: #4f7ef8;
+}
+
+.sidebar-submenu-depth2 {
+  padding: 2px 0;
+  background: #fafbfc;
+}
+
+.sidebar-submenu-depth2 .sidebar-item a {
+  padding-left: 42px;
+}
+
+.sidebar-submenu-depth2 .sidebar-item-disabled {
+  padding-left: 42px;
+}
+
 .sidebar-empty,
 .sidebar-empty-sub {
   padding: 16px 18px;

@@ -95,18 +95,51 @@ function PortalLeft({ open, menus }) {
                   </button>
                   {isOpen && (
                     <ul className="sidebar-submenu">
-                      {children.map((c) => (
-                        <li
-                          key={c.menuId}
-                          className={`sidebar-item ${location.pathname === c.programUrl ? 'active' : ''}`}
-                        >
-                          {c.programUrl ? (
-                            <Link to={c.programUrl}>{c.menuName}</Link>
-                          ) : (
-                            <span className="sidebar-item-disabled">{c.menuName}</span>
-                          )}
-                        </li>
-                      ))}
+                      {children.map((c) => {
+                        const grandchildren = childrenByParent.get(c.menuId) ?? []
+                        if (grandchildren.length > 0) {
+                          const isSubOpen = expanded.has(c.menuId)
+                          return (
+                            <li key={c.menuId}>
+                              <button
+                                className="sidebar-subgroup-header"
+                                onClick={() => toggleSection(c.menuId)}
+                              >
+                                <span>{c.menuName}</span>
+                                <ChevronIcon open={isSubOpen} />
+                              </button>
+                              {isSubOpen && (
+                                <ul className="sidebar-submenu sidebar-submenu-depth2">
+                                  {grandchildren.map((g) => (
+                                    <li
+                                      key={g.menuId}
+                                      className={`sidebar-item ${location.pathname === g.programUrl ? 'active' : ''}`}
+                                    >
+                                      {g.programUrl ? (
+                                        <Link to={g.programUrl}>{g.menuName}</Link>
+                                      ) : (
+                                        <span className="sidebar-item-disabled">{g.menuName}</span>
+                                      )}
+                                    </li>
+                                  ))}
+                                </ul>
+                              )}
+                            </li>
+                          )
+                        }
+                        return (
+                          <li
+                            key={c.menuId}
+                            className={`sidebar-item ${location.pathname === c.programUrl ? 'active' : ''}`}
+                          >
+                            {c.programUrl ? (
+                              <Link to={c.programUrl}>{c.menuName}</Link>
+                            ) : (
+                              <span className="sidebar-item-disabled">{c.menuName}</span>
+                            )}
+                          </li>
+                        )
+                      })}
                     </ul>
                   )}
                 </div>
