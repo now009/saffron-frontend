@@ -101,7 +101,7 @@ function DataSourceSelectModal({ onClose, onSelect }) {
 
   return (
     <div className="modal-overlay modal-overlay-top" onMouseDown={e => { if (e.target === e.currentTarget) onClose() }}>
-      <div className="modal-box" style={{ width: 640 }}>
+      <div className="modal-box" style={{ width: 580 }}>
         <div className="modal-header">
           <span className="modal-title">DataSource 목록</span>
           <button className="modal-close" onClick={onClose}>✕</button>
@@ -257,7 +257,7 @@ function DbAdapterConfig() {
   )
 
   return (
-    <div className="content-area">
+    <div className="content-area eai-compact">
       <div className="content-body">
         <div className="grid-container">
           <div className="grid-toolbar">
@@ -335,7 +335,7 @@ function DbAdapterConfig() {
       {/* ─── 등록/수정 모달 — 좌: 기본정보 → 추가설정, 우: 쿼리 입력 + 검증 ─── */}
       {modal && (
         <div className="modal-overlay" onClick={closeModal}>
-          <div className="modal-box" style={{ width: 1080 }} onClick={e => e.stopPropagation()}>
+          <div className="modal-box" style={{ width: 1200 }} onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <span className="modal-title">{modal === 'edit' ? 'DB 어댑터 설정 수정' : 'DB 어댑터 설정 등록'}</span>
               <button className="modal-close" onClick={closeModal}>✕</button>
@@ -379,7 +379,7 @@ function DbAdapterConfig() {
                     <h4>추가 설정</h4>
                     <div className="modal-field modal-field-v">
                       <label>파라미터 매핑 (JSON)</label>
-                      <textarea rows={4} value={form.paramMapping ?? ''}
+                      <textarea rows={6} value={form.paramMapping ?? ''}
                         onChange={e => setForm(f => ({ ...f, paramMapping: e.target.value }))} />
                     </div>
                     <div className="modal-field">
@@ -405,10 +405,10 @@ function DbAdapterConfig() {
                     <h4 className="req">쿼리</h4>
                     <div className="modal-field modal-field-v">
                       <textarea
-                        rows={18}
+                        rows={28}
                         value={form.query ?? ''}
                         placeholder="SELECT id, name FROM ..."
-                        style={{ fontFamily: 'monospace', fontSize: '0.82rem', minHeight: 360 }}
+                        style={{ fontFamily: 'monospace', fontSize: '0.78rem', minHeight: 480 }}
                         onChange={e => setForm(f => ({ ...f, query: e.target.value }))}
                       />
                     </div>
