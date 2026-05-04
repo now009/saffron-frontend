@@ -5,7 +5,7 @@
 // 작업유형(QUERY/INSERT/UPDATE/DELETE/PROCEDURE) + 결과유형(LIST/SINGLE/COUNT/NONE)으로 동작 결정
 // ============================================================
 import { useEffect, useRef, useState } from 'react'
-import eaiApi from '../../api/eaiApi'
+import eaiApi, { handleEaiResponse } from '../../api/eaiApi'
 import '../../eai.css'
 
 // 행별 수정/삭제 메뉴 — 4개 어댑터 페이지 공통 패턴 (현재는 각 파일에 중복 정의)
@@ -74,6 +74,96 @@ function SearchIcon() {
   )
 }
 
+// ─── DataSource 선택 서브모달 — DB 어댑터 등록/수정 시 datasourceId를 그리드에서 골라 입력 ───
+// 메뉴관리의 ProgramSelectModal과 동일 패턴 (modal-overlay-top + radio 선택 → onSelect)
+function DataSourceSelectModal({ onClose, onSelect }) {
+  const [list, setList]       = useState([])
+  const [loading, setLoading] = useState(false)
+  const [keyword, setKeyword] = useState('')
+  const [selected, setSelected] = useState(null)
+
+  const fetchData = (kw = '') => {
+    setLoading(true)
+    setSelected(null)
+    eaiApi.datasource.list({ datasourceId: kw })
+      .then(data => setList(Array.isArray(data) ? data : (data?.content ?? [])))
+      .catch(() => alert('DataSource 목록 조회 실패'))
+      .finally(() => setLoading(false))
+  }
+
+  useEffect(() => { fetchData() }, [])
+
+  const handleConfirm = () => {
+    if (!selected) { alert('DataSource를 선택하세요'); return }
+    onSelect(selected)
+  }
+
+  return (
+    <div className="modal-overlay modal-overlay-top" onMouseDown={e => { if (e.target === e.currentTarget) onClose() }}>
+      <div className="modal-box" style={{ width: 640 }}>
+        <div className="modal-header">
+          <span className="modal-title">DataSource 목록</span>
+          <button className="modal-close" onClick={onClose}>✕</button>
+        </div>
+        <div className="modal-program-search">
+          <div className="grid-search-bar">
+            <input
+              type="text"
+              placeholder="DataSource ID"
+              value={keyword}
+              onChange={e => setKeyword(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && fetchData(keyword)}
+            />
+            <button className="grid-search-btn" onClick={() => fetchData(keyword)}>
+              <SearchIcon />
+            </button>
+          </div>
+        </div>
+        <div className="modal-program-list">
+          {loading ? (
+            <div className="modal-program-empty">조회 중...</div>
+          ) : list.length === 0 ? (
+            <div className="modal-program-empty">데이터가 없습니다.</div>
+          ) : (
+            <table className="modal-program-table">
+              <thead>
+                <tr>
+                  <th className="radio-cell"></th>
+                  <th>DataSource ID</th>
+                  <th>DataSource명</th>
+                  <th>DB 유형</th>
+                  <th>사용자명</th>
+                </tr>
+              </thead>
+              <tbody>
+                {list.map(d => (
+                  <tr
+                    key={d.id ?? d.datasourceId}
+                    className={`modal-program-row${selected?.datasourceId === d.datasourceId ? ' selected' : ''}`}
+                    onClick={() => setSelected(d)}
+                  >
+                    <td className="radio-cell">
+                      <input type="radio" readOnly checked={selected?.datasourceId === d.datasourceId} />
+                    </td>
+                    <td>{d.datasourceId}</td>
+                    <td>{d.datasourceName ?? '-'}</td>
+                    <td>{d.dbType ?? '-'}</td>
+                    <td>{d.dbUsername ?? '-'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+        <div className="modal-footer">
+          <button className="modal-btn-cancel" onClick={onClose}>취소</button>
+          <button className="modal-btn-save" onClick={handleConfirm}>선택</button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function DbAdapterConfig() {
   const [list, setList]       = useState([])
   const [loading, setLoading] = useState(true)
@@ -81,6 +171,12 @@ function DbAdapterConfig() {
   const [modal, setModal]     = useState(null)
   const [form, setForm]       = useState(defaultForm)
   const [saving, setSaving]   = useState(false)
+  const [dsModal, setDsModal] = useState(false)   // DataSource 선택 서브모달 표시 여부
+
+  const handleSelectDatasource = (ds) => {
+    setForm(f => ({ ...f, datasourceId: ds.datasourceId }))
+    setDsModal(false)
+  }
 
   const load = () => {
     setLoading(true)
@@ -108,8 +204,10 @@ function DbAdapterConfig() {
     if (err) { alert(err); return }
     setSaving(true)
     try {
-      if (modal === 'edit') await eaiApi.dbAdapterConfig.update(form.id, form)
-      else                  await eaiApi.dbAdapterConfig.create(form)
+      const res = modal === 'edit'
+        ? await eaiApi.dbAdapterConfig.update(form.id, form)
+        : await eaiApi.dbAdapterConfig.create(form)
+      if (!handleEaiResponse(res)) return
       closeModal(); load()
     } catch { alert('저장 중 오류가 발생했습니다.') }
     finally { setSaving(false) }
@@ -117,8 +215,11 @@ function DbAdapterConfig() {
 
   const handleDelete = async (item) => {
     if (!window.confirm(`DB 어댑터 설정 [${item.interfaceId}]을 삭제하시겠습니까?`)) return
-    await eaiApi.dbAdapterConfig.delete(item.id).catch(() => alert('삭제 중 오류가 발생했습니다.'))
-    load()
+    try {
+      const res = await eaiApi.dbAdapterConfig.delete(item.id)
+      if (!handleEaiResponse(res)) return
+      load()
+    } catch { alert('삭제 중 오류가 발생했습니다.') }
   }
 
   const f = (key, label, placeholder = '', req = false) => (
@@ -206,7 +307,7 @@ function DbAdapterConfig() {
       {/* ─── 등록/수정 모달 — 좌: 기본정보, 우: 추가설정(파라미터 매핑·롤백·활성) ─── */}
       {modal && (
         <div className="modal-overlay" onClick={closeModal}>
-          <div className="modal-box" style={{ width: 920 }} onClick={e => e.stopPropagation()}>
+          <div className="modal-box" style={{ width: 1080 }} onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <span className="modal-title">{modal === 'edit' ? 'DB 어댑터 설정 수정' : 'DB 어댑터 설정 등록'}</span>
               <button className="modal-close" onClick={closeModal}>✕</button>
@@ -217,7 +318,20 @@ function DbAdapterConfig() {
                   <div className="eai-form-section">
                     <h4>기본 정보</h4>
                     {f('interfaceId',  '인터페이스ID',  'IF-0001',                          true)}
-                    {f('datasourceId', 'DataSource ID', 'DS_ERP',                           true)}
+                    <div className="modal-field" key="datasourceId">
+                      <label className="req">DataSource ID</label>
+                      <div className="modal-input-row">
+                        <input
+                          type="text"
+                          value={form.datasourceId ?? ''}
+                          placeholder="조회 버튼으로 선택"
+                          readOnly
+                        />
+                        <button type="button" className="modal-lookup-btn" onClick={() => setDsModal(true)}>
+                          <SearchIcon />
+                        </button>
+                      </div>
+                    </div>
                     {f('statementId',  'Statement ID',  'com.mapper.EaiMapper.selectData', true)}
                     <div className="modal-field">
                       <label className="req">작업 유형</label>
@@ -271,6 +385,11 @@ function DbAdapterConfig() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* ─── DataSource 선택 서브모달 (modal-overlay-top: z-index 1100, 메인 모달 위에 표시) ─── */}
+      {dsModal && (
+        <DataSourceSelectModal onClose={() => setDsModal(false)} onSelect={handleSelectDatasource} />
       )}
     </div>
   )

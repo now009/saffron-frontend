@@ -7,7 +7,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import StatusBadge from '../components/StatusBadge'
-import eaiApi from '../api/eaiApi'
+import eaiApi, { handleEaiResponse } from '../api/eaiApi'
 import '../eai.css'
 
 // 첫 항목 ''는 select의 "전체" 옵션용 — 백엔드 enum과 분리해 유지
@@ -39,10 +39,14 @@ function InterfaceList() {
   useEffect(() => { load() }, [])
 
   // 행 onClick(상세 이동)이 토글 버튼에도 전파되지 않도록 stopPropagation
-  const handleToggle = (e, item) => {
+  const handleToggle = async (e, item) => {
     e.stopPropagation()
     if (!window.confirm(`인터페이스를 ${item.isActive ? '비활성화' : '활성화'}하시겠습니까?`)) return
-    eaiApi.interface.toggle(item.id, !item.isActive).then(load)
+    try {
+      const res = await eaiApi.interface.toggle(item.id, !item.isActive)
+      if (!handleEaiResponse(res)) return
+      load()
+    } catch { alert('처리 중 오류가 발생했습니다.') }
   }
 
   return (

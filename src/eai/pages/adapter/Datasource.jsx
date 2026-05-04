@@ -5,7 +5,7 @@
 // 필수 검증: 기본정보 8개 + 풀설정 4개 — 저장/Connection Test 모두 동일한 validate() 통과 필요
 // ============================================================
 import { useEffect, useRef, useState } from 'react'
-import eaiApi from '../../api/eaiApi'
+import eaiApi, { handleEaiResponse } from '../../api/eaiApi'
 import '../../eai.css'
 
 // ─── 행별 수정/삭제 드롭다운 메뉴 (그리드 마지막 컬럼) ───
@@ -73,7 +73,6 @@ const REQUIRED_FIELDS = {
   dbUsername:      'DB 사용자명',
   dbPassword:      'DB 비밀번호',
   driverClass:     'Driver Class',
-  defaultSchema:   '기본 스키마',
   poolMinSize:     '최소 풀 크기',
   poolMaxSize:     '최대 풀 크기',
   poolTimeoutMs:   '연결 대기 타임아웃',
@@ -119,8 +118,10 @@ function Datasource() {
     if (err) { alert(err); return }
     setSaving(true)
     try {
-      if (modal === 'edit') await eaiApi.datasource.update(form.id, form)
-      else                  await eaiApi.datasource.create(form)
+      const res = modal === 'edit'
+        ? await eaiApi.datasource.update(form.id, form)
+        : await eaiApi.datasource.create(form)
+      if (!handleEaiResponse(res)) return
       closeModal(); load()
     } catch { alert('저장 중 오류가 발생했습니다.') }
     finally { setSaving(false) }
@@ -128,8 +129,11 @@ function Datasource() {
 
   const handleDelete = async (item) => {
     if (!window.confirm(`DataSource [${item.datasourceId}]를 삭제하시겠습니까?`)) return
-    await eaiApi.datasource.delete(item.id).catch(() => alert('삭제 중 오류가 발생했습니다.'))
-    load()
+    try {
+      const res = await eaiApi.datasource.delete(item.id)
+      if (!handleEaiResponse(res)) return
+      load()
+    } catch { alert('삭제 중 오류가 발생했습니다.') }
   }
 
   // Connection Test — 저장 없이 현재 폼 값으로 백엔드가 실제 DB에 쿼리(SELECT 1 등) 발송.
@@ -140,8 +144,10 @@ function Datasource() {
     setTesting(true)
     setTestResult(null)
     try {
+      // Connection Test는 success가 "연결 성공/실패"의 정상 결과이므로
+      // alert 없이 인라인으로 결과만 표시 (handleEaiResponse 미사용)
       const res = await eaiApi.datasource.test(form)
-      const ok  = res?.success === true || res?.ok === true
+      const ok  = res?.success === true
       const msg = res?.message ?? (ok ? '연결 성공' : '연결 실패')
       setTestResult({ ok, msg })
     } catch {
@@ -271,7 +277,7 @@ function Datasource() {
                     {f('dbUsername',    'DB 사용자명',   'text',     '',                                true)}
                     {f('dbPassword',    'DB 비밀번호',   'password', '',                                true)}
                     {f('driverClass',   'Driver Class', 'text',     'org.mariadb.jdbc.Driver',         true)}
-                    {f('defaultSchema', '기본 스키마',   'text',     '',                                true)}
+                    {f('defaultSchema', '기본 스키마')}
                   </div>
                   <div className="eai-test-row">
                     <button type="button" className="eai-test-btn" onClick={handleConnectionTest} disabled={testing}>

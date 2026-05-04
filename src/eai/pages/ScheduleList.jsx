@@ -5,7 +5,7 @@
 // 등록·수정 폼은 별도로 없음 — 인터페이스 등록 시 자동 생성된다는 가정
 // ============================================================
 import { useEffect, useState } from 'react'
-import eaiApi from '../api/eaiApi'
+import eaiApi, { handleEaiResponse } from '../api/eaiApi'
 import '../eai.css'
 
 function ScheduleList() {
@@ -23,19 +23,26 @@ function ScheduleList() {
 
   useEffect(() => { load() }, [])
 
-  const handleRun = (id) => {
+  const handleRun = async (id) => {
     if (!window.confirm('스케줄을 즉시 실행하시겠습니까?')) return
     setRunning(id)
-    eaiApi.schedule.run(id)
-      .then(() => { alert('실행 요청이 완료되었습니다.'); load() })
-      .catch(() => alert('실행 중 오류가 발생했습니다.'))
-      .finally(() => setRunning(null))
+    try {
+      const res = await eaiApi.schedule.run(id)
+      if (!handleEaiResponse(res)) return
+      alert(res?.message ?? '실행 요청이 완료되었습니다.')
+      load()
+    } catch { alert('실행 중 오류가 발생했습니다.') }
+    finally { setRunning(null) }
   }
 
   // 행 클릭 이벤트가 토글 버튼에 전파되지 않도록 차단 (현재 행 클릭 동작은 없지만 일관성 유지)
-  const handleToggle = (e, item) => {
+  const handleToggle = async (e, item) => {
     e.stopPropagation()
-    eaiApi.schedule.toggle(item.id, !item.isActive).then(load)
+    try {
+      const res = await eaiApi.schedule.toggle(item.id, !item.isActive)
+      if (!handleEaiResponse(res)) return
+      load()
+    } catch { alert('처리 중 오류가 발생했습니다.') }
   }
 
   return (

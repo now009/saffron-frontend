@@ -10,7 +10,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import AdapterConfigForm from '../components/AdapterConfigForm'
 import MappingRuleEditor from '../components/MappingRuleEditor'
 import MessageViewer from '../components/MessageViewer'
-import eaiApi from '../api/eaiApi'
+import eaiApi, { handleEaiResponse } from '../api/eaiApi'
 import '../eai.css'
 
 const STEPS = ['기본 정보', '어댑터 설정', '매핑 규칙', '검토 · 테스트']
@@ -55,20 +55,23 @@ function InterfaceForm() {
   }, [id, isEdit])
 
   // 인터페이스 → 어댑터 → 매핑 순차 저장.
-  // 주의: 중간 단계에서 실패해도 이전 단계의 결과는 롤백되지 않음 (백엔드 트랜잭션 미보장).
+  // 각 단계에서 success=false 시 즉시 중단 (이전 단계는 롤백되지 않으므로 부분 저장 가능성 있음).
+  // 응답에 entity id가 보장되지 않으므로 신규 등록 시 목록으로 이동 (수정은 상세 유지).
   const handleSave = async () => {
     setSaving(true)
     try {
-      let saved
-      if (isEdit) {
-        saved = await eaiApi.interface.update(id, form)
-      } else {
-        saved = await eaiApi.interface.create(form)
-      }
-      const ifaceId = saved.id ?? id
-      await eaiApi.adapter.save({ ...adapter, interfaceId: form.interfaceId, adapterType: form.adapterType })
-      await eaiApi.mapping.save(form.interfaceId, rules)
-      navigate(`/eai/interfaces/${ifaceId}`)
+      const ifaceRes = isEdit
+        ? await eaiApi.interface.update(id, form)
+        : await eaiApi.interface.create(form)
+      if (!handleEaiResponse(ifaceRes)) return
+
+      const adapterRes = await eaiApi.adapter.save({ ...adapter, interfaceId: form.interfaceId, adapterType: form.adapterType })
+      if (!handleEaiResponse(adapterRes)) return
+
+      const mappingRes = await eaiApi.mapping.save(form.interfaceId, rules)
+      if (!handleEaiResponse(mappingRes)) return
+
+      navigate(isEdit ? `/eai/interfaces/${id}` : '/eai/interfaces')
     } catch (e) {
       alert('저장 중 오류가 발생했습니다.')
     } finally {
@@ -76,6 +79,7 @@ function InterfaceForm() {
     }
   }
 
+  // 테스트 전송은 응답 본문 자체가 결과 — JSON으로 그대로 표시 (handleEaiResponse 미사용)
   const handleTest = () => {
     setTestLoading(true)
     setTestResult(null)

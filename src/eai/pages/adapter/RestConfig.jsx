@@ -5,7 +5,7 @@
 // 필수 검증: 기본정보 7개 + 인증유형별 동적 필수 (validate() 참고)
 // ============================================================
 import { useEffect, useRef, useState } from 'react'
-import eaiApi from '../../api/eaiApi'
+import eaiApi, { handleEaiResponse } from '../../api/eaiApi'
 import '../../eai.css'
 
 // 4개 어댑터 페이지 공통 ActionMenu — 그리드 하단 잘림 방지를 위한 위/아래 자동 전환
@@ -132,8 +132,10 @@ function RestConfig() {
     if (err) { alert(err); return }
     setSaving(true)
     try {
-      if (modal === 'edit') await eaiApi.restConfig.update(form.id, form)
-      else                  await eaiApi.restConfig.create(form)
+      const res = modal === 'edit'
+        ? await eaiApi.restConfig.update(form.id, form)
+        : await eaiApi.restConfig.create(form)
+      if (!handleEaiResponse(res)) return
       closeModal(); load()
     } catch { alert('저장 중 오류가 발생했습니다.') }
     finally { setSaving(false) }
@@ -141,8 +143,11 @@ function RestConfig() {
 
   const handleDelete = async (item) => {
     if (!window.confirm(`REST 설정 [${item.configName}]을 삭제하시겠습니까?`)) return
-    await eaiApi.restConfig.delete(item.id).catch(() => alert('삭제 중 오류가 발생했습니다.'))
-    load()
+    try {
+      const res = await eaiApi.restConfig.delete(item.id)
+      if (!handleEaiResponse(res)) return
+      load()
+    } catch { alert('삭제 중 오류가 발생했습니다.') }
   }
 
   const fv = (key, label, placeholder = '', req = false) => (

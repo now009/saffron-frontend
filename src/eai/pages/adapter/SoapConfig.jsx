@@ -5,7 +5,7 @@
 // 필수 검증: WSDL/서비스 6개 + SOAP 프로토콜 3개 + 보안유형별 동적 필수
 // ============================================================
 import { useEffect, useRef, useState } from 'react'
-import eaiApi from '../../api/eaiApi'
+import eaiApi, { handleEaiResponse } from '../../api/eaiApi'
 import '../../eai.css'
 
 // 4개 어댑터 페이지 공통 ActionMenu — 향후 components/로 추출 후보
@@ -134,8 +134,10 @@ function SoapConfig() {
     if (err) { alert(err); return }
     setSaving(true)
     try {
-      if (modal === 'edit') await eaiApi.soapConfig.update(form.id, form)
-      else                  await eaiApi.soapConfig.create(form)
+      const res = modal === 'edit'
+        ? await eaiApi.soapConfig.update(form.id, form)
+        : await eaiApi.soapConfig.create(form)
+      if (!handleEaiResponse(res)) return
       closeModal(); load()
     } catch { alert('저장 중 오류가 발생했습니다.') }
     finally { setSaving(false) }
@@ -143,8 +145,11 @@ function SoapConfig() {
 
   const handleDelete = async (item) => {
     if (!window.confirm(`SOAP 설정 [${item.configName}]을 삭제하시겠습니까?`)) return
-    await eaiApi.soapConfig.delete(item.id).catch(() => alert('삭제 중 오류가 발생했습니다.'))
-    load()
+    try {
+      const res = await eaiApi.soapConfig.delete(item.id)
+      if (!handleEaiResponse(res)) return
+      load()
+    } catch { alert('삭제 중 오류가 발생했습니다.') }
   }
 
   const fv = (key, label, placeholder = '', req = false) => (

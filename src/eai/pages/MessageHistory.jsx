@@ -7,7 +7,7 @@
 import { useEffect, useState } from 'react'
 import StatusBadge from '../components/StatusBadge'
 import MessageViewer from '../components/MessageViewer'
-import eaiApi from '../api/eaiApi'
+import eaiApi, { handleEaiResponse } from '../api/eaiApi'
 import '../eai.css'
 
 const STATUS_OPTIONS = ['', 'SUCCESS', 'FAIL', 'RETRY', 'DLQ']
@@ -37,13 +37,17 @@ function MessageHistory() {
 
   useEffect(() => { load() }, [])
 
-  const handleRetry = () => {
+  const handleRetry = async () => {
     if (!window.confirm('선택한 메시지를 재처리하시겠습니까?')) return
     setRetrying(true)
-    eaiApi.message.retry(selected.id)
-      .then(() => { alert('재처리 요청이 완료되었습니다.'); setSelected(null); load() })
-      .catch(() => alert('재처리 중 오류가 발생했습니다.'))
-      .finally(() => setRetrying(false))
+    try {
+      const res = await eaiApi.message.retry(selected.id)
+      if (!handleEaiResponse(res)) return
+      // 백엔드 메시지가 있으면 그대로, 없으면 기본 안내 — 성공 알림은 유지
+      alert(res?.message ?? '재처리 요청이 완료되었습니다.')
+      setSelected(null); load()
+    } catch { alert('재처리 중 오류가 발생했습니다.') }
+    finally { setRetrying(false) }
   }
 
   return (
