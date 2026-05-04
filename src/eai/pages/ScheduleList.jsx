@@ -46,7 +46,7 @@ function ScheduleList() {
   }
 
   return (
-    <div className="content-area">
+    <div className="content-area eai-compact">
       <div className="content-body">
         <div className="grid-container">
           <div className="grid-toolbar">
@@ -58,64 +58,64 @@ function ScheduleList() {
             </div>
           </div>
 
-        <div className="grid-wrap">
-          <table className="grid-table">
-            <colgroup>
-              <col style={{ width: 80 }} />
-              <col style={{ width: 110 }} />
-              <col />
-              <col style={{ width: 150 }} />
-              <col style={{ width: 80 }} />
-              <col style={{ width: 150 }} />
-              <col style={{ width: 150 }} />
-              <col style={{ width: 100 }} />
-              <col style={{ width: 80 }} />
-            </colgroup>
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>인터페이스ID</th>
-                <th>스케줄명</th>
-                <th>Cron 표현식</th>
-                <th>활성화</th>
-                <th>마지막 실행</th>
-                <th>다음 실행</th>
-                <th>마지막 상태</th>
-                <th>즉시 실행</th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading ? (
-                <tr><td colSpan={9} className="grid-loading">로딩 중...</td></tr>
-              ) : list.length === 0 ? (
-                <tr><td colSpan={9} className="grid-empty">데이터가 없습니다.</td></tr>
-              ) : list.map(item => (
-                <tr key={item.id}>
-                  <td>{item.id}</td>
-                  <td>{item.interfaceId}</td>
-                  <td>{item.scheduleName ?? item.name ?? '-'}</td>
-                  <td><code style={{ fontSize: 11 }}>{item.cronExpression}</code></td>
-                  <td>
-                    <button
-                      className={`eai-toggle-btn ${item.isActive ? 'on' : 'off'}`}
-                      onClick={e => handleToggle(e, item)}
-                    >{item.isActive ? 'ON' : 'OFF'}</button>
-                  </td>
-                  <td>{item.lastRunAt ? String(item.lastRunAt).slice(0, 16) : '-'}</td>
-                  <td>{item.nextRunAt ? String(item.nextRunAt).slice(0, 16) : '-'}</td>
-                  <td>{item.lastStatus ?? '-'}</td>
-                  <td>
-                    <button
-                      className="grid-search-btn"
-                      onClick={() => handleRun(item.id)}
-                      disabled={running === item.id}
-                    >{running === item.id ? '...' : '실행'}</button>
-                  </td>
+          <div className="grid-wrap">
+            <table className="grid-table">
+              <colgroup>
+                <col style={{ width: 80 }} />
+                <col style={{ width: 110 }} />
+                <col />
+                <col style={{ width: 150 }} />
+                <col style={{ width: 80 }} />
+                <col style={{ width: 150 }} />
+                <col style={{ width: 150 }} />
+                <col style={{ width: 100 }} />
+                <col style={{ width: 80 }} />
+              </colgroup>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>인터페이스ID</th>
+                  <th>스케줄명</th>
+                  <th>Cron 표현식</th>
+                  <th>활성화</th>
+                  <th>마지막 실행</th>
+                  <th>다음 실행</th>
+                  <th>마지막 상태</th>
+                  <th>즉시 실행</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {loading ? (
+                  <tr><td colSpan={9} className="grid-loading">로딩 중...</td></tr>
+                ) : list.length === 0 ? (
+                  <tr><td colSpan={9} className="grid-empty">데이터가 없습니다.</td></tr>
+                ) : list.map(item => (
+                  <tr key={item.id}>
+                    <td>{item.id}</td>
+                    <td>{item.interfaceId}</td>
+                    <td>{item.scheduleName ?? item.name ?? '-'}</td>
+                    <td><code style={{ fontSize: 11 }}>{item.cronExpression}</code></td>
+                    <td className="eai-cell-center">
+                      <button
+                        className={`eai-toggle-btn ${item.isActive ? 'on' : 'off'}`}
+                        onClick={e => handleToggle(e, item)}
+                      >{item.isActive ? 'ON' : 'OFF'}</button>
+                    </td>
+                    <td>{item.lastRunAt ? String(item.lastRunAt).slice(0, 16) : '-'}</td>
+                    <td>{item.nextRunAt ? String(item.nextRunAt).slice(0, 16) : '-'}</td>
+                    <td className="eai-cell-center">{item.lastStatus ?? '-'}</td>
+                    <td className="eai-cell-center">
+                      <button
+                        className="grid-search-btn"
+                        onClick={() => handleRun(item.id)}
+                        disabled={running === item.id}
+                      >{running === item.id ? '...' : '실행'}</button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>

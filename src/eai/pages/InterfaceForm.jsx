@@ -92,7 +92,7 @@ function InterfaceForm() {
   if (loading) return <div className="content-area"><div className="content-body"><p>로딩 중...</p></div></div>
 
   return (
-    <div className="content-area">
+    <div className="content-area eai-compact">
       <div className="content-body">
       <h2 style={{ fontSize: '1.05rem', fontWeight: 700, marginBottom: 16, color: '#1e2530' }}>{isEdit ? '인터페이스 수정' : '인터페이스 등록'}</h2>
 
@@ -119,7 +119,7 @@ function InterfaceForm() {
             ['targetSystem','수신시스템',   'text', ''],
           ].map(([key, label, type, placeholder]) => (
             <div className="modal-field" key={key}>
-              <label>{label}</label>
+              <label className="req">{label}</label>
               <input
                 type={type}
                 value={form[key]}
@@ -129,7 +129,7 @@ function InterfaceForm() {
             </div>
           ))}
           <div className="modal-field">
-            <label>어댑터 유형</label>
+            <label className="req">어댑터 유형</label>
             <select value={form.adapterType} onChange={e => setForm(f => ({ ...f, adapterType: e.target.value }))}>
               {ADAPTER_TYPES.map(t => <option key={t}>{t}</option>)}
             </select>

@@ -38,7 +38,7 @@ function InterfaceDetail() {
   if (!iface) return <div className="content-area"><div className="content-body"><p>인터페이스를 찾을 수 없습니다.</p></div></div>
 
   return (
-    <div className="content-area">
+    <div className="content-area eai-compact">
     <div className="content-body">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
         <div>

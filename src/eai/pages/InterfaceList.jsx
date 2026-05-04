@@ -50,7 +50,7 @@ function InterfaceList() {
   }
 
   return (
-    <div className="content-area">
+    <div className="content-area eai-compact">
       <div className="content-body">
         <div className="grid-container">
           <div className="grid-toolbar">
@@ -125,11 +125,11 @@ function InterfaceList() {
                     <td>{item.name}</td>
                     <td>{item.sourceSystem}</td>
                     <td>{item.targetSystem}</td>
-                    <td>{item.adapterType}</td>
-                    <td><StatusBadge status={item.status} /></td>
-                    <td style={{ textAlign: 'right' }}>{(item.todayCount ?? 0).toLocaleString()}</td>
+                    <td className="eai-cell-center">{item.adapterType}</td>
+                    <td className="eai-cell-center"><StatusBadge status={item.status} /></td>
+                    <td className="eai-cell-center">{(item.todayCount ?? 0).toLocaleString()}</td>
                     <td>{item.lastRunAt ? String(item.lastRunAt).slice(0, 16) : '-'}</td>
-                    <td>
+                    <td className="eai-cell-center">
                       <button
                         className={`eai-toggle-btn ${item.isActive ? 'on' : 'off'}`}
                         onClick={e => handleToggle(e, item)}

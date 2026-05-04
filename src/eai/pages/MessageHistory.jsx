@@ -51,7 +51,7 @@ function MessageHistory() {
   }
 
   return (
-    <div className="content-area">
+    <div className="content-area eai-compact">
       <div className="content-body">
         <div className="grid-container">
           <div className="grid-toolbar">
@@ -129,8 +129,8 @@ function MessageHistory() {
                     <td>{item.sourceSystem}</td>
                     <td>{item.targetSystem}</td>
                     <td>{item.direction}</td>
-                    <td><StatusBadge status={item.status} /></td>
-                    <td style={{ textAlign: 'right' }}>{item.processingMs}</td>
+                    <td className="eai-cell-center"><StatusBadge status={item.status} /></td>
+                    <td className="eai-cell-center">{item.processingMs}</td>
                     <td>{item.createdAt ? String(item.createdAt).slice(0, 16) : '-'}</td>
                   </tr>
                 ))}
@@ -143,13 +143,13 @@ function MessageHistory() {
       {/* ─── 메시지 상세 모달 — 행 클릭 시 표시, 외부 클릭 시 닫힘 ─── */}
       {selected && (
         <div className="modal-overlay" onClick={() => setSelected(null)}>
-          <div className="modal-box" style={{ width: 720, maxHeight: '80vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
+          <div className="modal-box" style={{ width: 720 }} onClick={e => e.stopPropagation()}>
             <div className="modal-header">
-              <h3 className="modal-title">메시지 상세 (ID: {selected.id})</h3>
+              <span className="modal-title">메시지 상세 (ID: {selected.id})</span>
               <button className="modal-close" onClick={() => setSelected(null)}>✕</button>
             </div>
             <div className="modal-body">
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 20px', marginBottom: 16 }}>
+              <div className="eai-modal-grid" style={{ marginBottom: 12 }}>
                 {[
                   ['인터페이스', selected.interfaceId],
                   ['상태',       <StatusBadge status={selected.status} />],
@@ -158,8 +158,9 @@ function MessageHistory() {
                   ['처리시간',   `${selected.processingMs}ms`],
                   ['수신일시',   selected.createdAt ? String(selected.createdAt).slice(0, 16) : '-'],
                 ].map(([k, v]) => (
-                  <div key={k} style={{ fontSize: '0.85rem' }}>
-                    <span style={{ color: '#6b7280', fontWeight: 600, marginRight: 6 }}>{k}</span>{v}
+                  <div key={k} className="modal-field">
+                    <label>{k}</label>
+                    <span>{v}</span>
                   </div>
                 ))}
               </div>

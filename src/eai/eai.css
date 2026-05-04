@@ -248,6 +248,8 @@
 .eai-compact .grid-search-bar input { font-size: 0.78rem; padding: 5px 10px; height: 30px; }
 .eai-compact .grid-search-btn,
 .eai-compact .grid-add-btn { font-size: 0.78rem; padding: 5px 12px; height: 30px; }
+.eai-compact .site-select { height: 30px; padding-top: 0; padding-bottom: 0; font-size: 0.78rem; }
+.eai-compact .grid-date-input { height: 30px; padding: 0 10px; font-size: 0.78rem; }
 /* 행 높이를 결정하는 액션 버튼/배지도 함께 축소 */
 .eai-compact .action-cell { padding: 2px 8px !important; }
 .eai-compact .action-btn { width: 22px; height: 22px; }

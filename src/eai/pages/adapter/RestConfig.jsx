@@ -167,7 +167,7 @@ function RestConfig() {
   )
 
   return (
-    <div className="content-area">
+    <div className="content-area eai-compact">
       <div className="content-body">
         <div className="grid-container">
           <div className="grid-toolbar">

@@ -176,7 +176,7 @@ function Datasource() {
   )
 
   return (
-    <div className="content-area">
+    <div className="content-area eai-compact">
       <div className="content-body">
         <div className="grid-container">
           <div className="grid-toolbar">
@@ -195,7 +195,7 @@ function Datasource() {
                 <option value="true">활성</option>
                 <option value="false">비활성</option>
               </select>
-              <button className="grid-search-btn" onClick={load} style={{ borderRadius: 8, padding: '7px 12px' }}>
+              <button className="grid-search-btn" onClick={load}>
                 <SearchIcon />
               </button>
               <button className="grid-add-btn" onClick={openNew}>+ 등록</button>
