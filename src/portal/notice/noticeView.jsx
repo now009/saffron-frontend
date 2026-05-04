@@ -1,3 +1,9 @@
+// ============================================================
+// 공지사항 상세/등록 — 단일 컴포넌트가 신규/조회/수정 3가지 모드 처리
+// 라우트: /portal/notices/new (신규) , /portal/notices/:noticeId (상세/수정)
+// 모드 분기: pathname '/new' 종료 여부로 isCreate 판정
+// 권한: 관리자만 등록·수정·삭제 가능, 일반사용자는 조회만
+// ============================================================
 import { useState, useEffect } from 'react'
 import { useNavigate, useParams, useLocation } from 'react-router-dom'
 import apiUri from '../../api/apiUri'
@@ -32,9 +38,10 @@ const EMPTY_FORM = {
   updatedDate: '',
 }
 
-const toDtInput  = (iso) => (iso ? String(iso).slice(0, 16) : '')
-const toDtServer = (val) => (val ? `${val}:00` : null)
-const toDateText = (iso) => (iso ? String(iso).replace('T', ' ').slice(0, 19) : '-')
+// 서버 ISO 문자열 ↔ HTML datetime-local input 사이의 포맷 변환 헬퍼
+const toDtInput  = (iso) => (iso ? String(iso).slice(0, 16) : '')           // 'YYYY-MM-DDTHH:MM' (input용)
+const toDtServer = (val) => (val ? `${val}:00` : null)                      // 초 단위 추가 후 서버로
+const toDateText = (iso) => (iso ? String(iso).replace('T', ' ').slice(0, 19) : '-')  // 화면 표시용
 
 function NoticeView() {
   const navigate = useNavigate()
@@ -46,6 +53,7 @@ function NoticeView() {
   const [form, setForm]       = useState(EMPTY_FORM)
   const [loading, setLoading] = useState(!isCreate)
 
+  // 신규 등록: 다음 noticeId 자동 채번 / 상세 조회: 단건 조회
   useEffect(() => {
     if (isCreate) {
       fetch(apiUri.notice.nextId(), { headers: serverConfig.token.authHeader() })
@@ -71,6 +79,7 @@ function NoticeView() {
 
   const set = (key, val) => setForm((prev) => ({ ...prev, [key]: val }))
 
+  // 서버 전송용 페이로드 구성 — 팝업 비활성 시 popup 시작/종료를 null로 비우기
   const buildPayload = () => {
     const popup = form.isPopup === 'Y'
     return {

@@ -1,7 +1,14 @@
+// ============================================================
+// SOAP 어댑터 설정 — WSDL 기반 레거시 SOAP 서비스 연동 정보
+// 라우트: /eai/soap-configs
+// 보안 유형: NONE / USERNAME_TOKEN / X509 / SAML — 선택값에 따라 추가 필드 조건부 노출
+// 필수 검증: WSDL/서비스 6개 + SOAP 프로토콜 3개 + 보안유형별 동적 필수
+// ============================================================
 import { useEffect, useRef, useState } from 'react'
 import eaiApi from '../../api/eaiApi'
 import '../../eai.css'
 
+// 4개 어댑터 페이지 공통 ActionMenu — 향후 components/로 추출 후보
 function ActionMenu({ row, onEdit, onDelete }) {
   const [open, setOpen]     = useState(false)
   const [openUp, setOpenUp] = useState(false)
@@ -50,6 +57,25 @@ const defaultForm = {
   requestTemplate: '', responsePath: '', isActive: true,
 }
 
+// WSDL/서비스 연결 필수 (portName은 선택 — WSDL이 단일 포트일 때 생략 가능)
+const REQUIRED_WSDL = {
+  interfaceId:   '인터페이스ID',
+  configName:    '설정명',
+  wsdlUrl:       'WSDL URL',
+  serviceUrl:    '서비스 URL',
+  namespace:     'Namespace',
+  operationName: 'Operation 이름',
+}
+
+// SOAP 프로토콜 필수 (mtomEnabled는 boolean이므로 검증 불요)
+const REQUIRED_PROTO = {
+  soapVersion: 'SOAP 버전',
+  soapAction:  'SOAP Action',
+  timeoutMs:   '타임아웃(ms)',
+}
+
+const isEmpty = (v) => v === '' || v === null || v === undefined
+
 function SearchIcon() {
   return (
     <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
@@ -80,7 +106,32 @@ function SoapConfig() {
   const openEdit = (item) => { setForm({ ...defaultForm, ...item }); setModal('edit') }
   const closeModal = () => setModal(null)
 
+  // 보안 유형에 따라 동적 필수
+  //   USERNAME_TOKEN → wsUsername + wsPassword + wsPasswordType
+  //   X509           → keystorePath + keystorePassword
+  //   NONE / SAML    → 추가 필드 없음
+  const validate = () => {
+    for (const [key, label] of Object.entries(REQUIRED_WSDL)) {
+      if (isEmpty(form[key])) return `${label} 항목은 필수입니다.`
+    }
+    for (const [key, label] of Object.entries(REQUIRED_PROTO)) {
+      if (isEmpty(form[key])) return `${label} 항목은 필수입니다.`
+    }
+    if (form.wsSecurityType === 'USERNAME_TOKEN') {
+      if (isEmpty(form.wsUsername))     return 'WS 사용자명 항목은 필수입니다.'
+      if (isEmpty(form.wsPassword))     return 'WS 비밀번호 항목은 필수입니다.'
+      if (isEmpty(form.wsPasswordType)) return '비밀번호 유형 항목은 필수입니다.'
+    }
+    if (form.wsSecurityType === 'X509') {
+      if (isEmpty(form.keystorePath))     return '키스토어 경로 항목은 필수입니다.'
+      if (isEmpty(form.keystorePassword)) return '키스토어 비밀번호 항목은 필수입니다.'
+    }
+    return null
+  }
+
   const handleSave = async () => {
+    const err = validate()
+    if (err) { alert(err); return }
     setSaving(true)
     try {
       if (modal === 'edit') await eaiApi.soapConfig.update(form.id, form)
@@ -96,17 +147,17 @@ function SoapConfig() {
     load()
   }
 
-  const fv = (key, label, placeholder = '') => (
+  const fv = (key, label, placeholder = '', req = false) => (
     <div className="modal-field" key={key}>
-      <label>{label}</label>
+      <label className={req ? 'req' : ''}>{label}</label>
       <input type="text" value={form[key] ?? ''} placeholder={placeholder}
         onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))} />
     </div>
   )
 
-  const fp = (key, label) => (
+  const fp = (key, label, req = false) => (
     <div className="modal-field" key={key}>
-      <label>{label}</label>
+      <label className={req ? 'req' : ''}>{label}</label>
       <input type="password" value={form[key] ?? ''}
         onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))} />
     </div>
@@ -162,10 +213,10 @@ function SoapConfig() {
                   <tr key={item.id}>
                     <td>{item.interfaceId}</td>
                     <td>{item.configName}</td>
-                    <td style={{ fontSize: 12, color: '#6b7280' }}>{item.wsdlUrl}</td>
-                    <td style={{ fontSize: 12, color: '#6b7280' }}>{item.serviceUrl}</td>
-                    <td style={{ textAlign: 'center' }}>{item.soapVersion}</td>
-                    <td style={{ textAlign: 'center' }}>
+                    <td className="eai-cell-mute">{item.wsdlUrl}</td>
+                    <td className="eai-cell-mute">{item.serviceUrl}</td>
+                    <td className="eai-cell-center">{item.soapVersion}</td>
+                    <td className="eai-cell-center">
                       <span className={`eai-status-badge ${item.isActive ? 'ACTIVE' : 'INACTIVE'}`}>
                         {item.isActive ? 'Y' : 'N'}
                       </span>
@@ -181,90 +232,93 @@ function SoapConfig() {
         </div>
       </div>
 
+      {/* ─── 등록/수정 모달 — 좌: WSDL+SOAP 프로토콜, 우: WS-Security+요청/응답 ─── */}
       {modal && (
         <div className="modal-overlay" onClick={closeModal}>
-          <div className="modal-box" style={{ width: 960 }} onClick={e => e.stopPropagation()}>
+          <div className="modal-box" style={{ width: 920 }} onClick={e => e.stopPropagation()}>
             <div className="modal-header">
-              <span>{modal === 'edit' ? 'SOAP 설정 수정' : 'SOAP 설정 등록'}</span>
-              <button onClick={closeModal} style={{ background: 'none', border: 'none', fontSize: 18, cursor: 'pointer' }}>×</button>
+              <span className="modal-title">{modal === 'edit' ? 'SOAP 설정 수정' : 'SOAP 설정 등록'}</span>
+              <button className="modal-close" onClick={closeModal}>✕</button>
             </div>
-            <div className="modal-body" style={{ display: 'flex', flexDirection: 'row', gap: 16, alignItems: 'flex-start' }}>
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 12 }}>
-                <div className="eai-form-section">
-                  <h4>WSDL / 서비스 연결</h4>
-                  {fv('interfaceId',   '인터페이스ID',   'IF-0001')}
-                  {fv('configName',    '설정명')}
-                  {fv('wsdlUrl',       'WSDL URL',       'http://legacy/service?wsdl')}
-                  {fv('serviceUrl',    '서비스 URL',      'http://legacy/service')}
-                  {fv('namespace',     'Namespace',       'http://example.com/schema')}
-                  {fv('operationName', 'Operation 이름')}
-                  {fv('portName',      'Port 이름 (선택)')}
-                </div>
-                <div className="eai-form-section">
-                  <h4>SOAP 프로토콜</h4>
-                  <div className="modal-field">
-                    <label>SOAP 버전</label>
-                    <select value={form.soapVersion}
-                      onChange={e => setForm(f => ({ ...f, soapVersion: e.target.value }))}>
-                      <option value="1.1">1.1</option>
-                      <option value="1.2">1.2</option>
-                    </select>
+            <div className="modal-body">
+              <div className="eai-modal-grid">
+                <div className="eai-modal-col">
+                  <div className="eai-form-section">
+                    <h4>WSDL / 서비스 연결</h4>
+                    {fv('interfaceId',   '인터페이스ID',   'IF-0001',                     true)}
+                    {fv('configName',    '설정명',         '',                            true)}
+                    {fv('wsdlUrl',       'WSDL URL',       'http://legacy/service?wsdl', true)}
+                    {fv('serviceUrl',    '서비스 URL',      'http://legacy/service',      true)}
+                    {fv('namespace',     'Namespace',       'http://example.com/schema', true)}
+                    {fv('operationName', 'Operation 이름', '',                            true)}
+                    {fv('portName',      'Port 이름 (선택)')}
                   </div>
-                  {fv('soapAction', 'SOAP Action')}
-                  <div className="modal-field">
-                    <label>MTOM 사용</label>
-                    <select value={form.mtomEnabled ? 'true' : 'false'}
-                      onChange={e => setForm(f => ({ ...f, mtomEnabled: e.target.value === 'true' }))}>
-                      <option value="false">미사용</option>
-                      <option value="true">사용</option>
-                    </select>
-                  </div>
-                  {fv('timeoutMs', '타임아웃(ms)')}
-                </div>
-              </div>
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 12 }}>
-                <div className="eai-form-section">
-                  <h4>WS-Security 인증</h4>
-                  <div className="modal-field">
-                    <label>보안 유형</label>
-                    <select value={form.wsSecurityType}
-                      onChange={e => setForm(f => ({ ...f, wsSecurityType: e.target.value }))}>
-                      {WS_SEC_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
-                    </select>
-                  </div>
-                  {form.wsSecurityType === 'USERNAME_TOKEN' && <>
-                    {fv('wsUsername', 'WS 사용자명')}
-                    {fp('wsPassword', 'WS 비밀번호')}
+                  <div className="eai-form-section">
+                    <h4>SOAP 프로토콜</h4>
                     <div className="modal-field">
-                      <label>비밀번호 유형</label>
-                      <select value={form.wsPasswordType}
-                        onChange={e => setForm(f => ({ ...f, wsPasswordType: e.target.value }))}>
-                        <option value="PasswordText">PasswordText</option>
-                        <option value="PasswordDigest">PasswordDigest</option>
+                      <label className="req">SOAP 버전</label>
+                      <select value={form.soapVersion}
+                        onChange={e => setForm(f => ({ ...f, soapVersion: e.target.value }))}>
+                        <option value="1.1">1.1</option>
+                        <option value="1.2">1.2</option>
                       </select>
                     </div>
-                  </>}
-                  {form.wsSecurityType === 'X509' && <>
-                    {fv('keystorePath', '키스토어 경로')}
-                    {fp('keystorePassword', '키스토어 비밀번호')}
-                  </>}
-                </div>
-                <div className="eai-form-section">
-                  <h4>요청 / 응답</h4>
-                  <div className="modal-field">
-                    <label>요청 템플릿 (XML)</label>
-                    <textarea rows={6} value={form.requestTemplate ?? ''}
-                      style={{ fontFamily: 'monospace', fontSize: '0.8rem' }}
-                      onChange={e => setForm(f => ({ ...f, requestTemplate: e.target.value }))} />
+                    {fv('soapAction', 'SOAP Action', '', true)}
+                    <div className="modal-field">
+                      <label>MTOM 사용</label>
+                      <select value={form.mtomEnabled ? 'true' : 'false'}
+                        onChange={e => setForm(f => ({ ...f, mtomEnabled: e.target.value === 'true' }))}>
+                        <option value="false">미사용</option>
+                        <option value="true">사용</option>
+                      </select>
+                    </div>
+                    {fv('timeoutMs', '타임아웃(ms)', '', true)}
                   </div>
-                  {fv('responsePath', '응답 XPath 경로')}
-                  <div className="modal-field">
-                    <label>활성화</label>
-                    <select value={form.isActive ? 'true' : 'false'}
-                      onChange={e => setForm(f => ({ ...f, isActive: e.target.value === 'true' }))}>
-                      <option value="true">활성</option>
-                      <option value="false">비활성</option>
-                    </select>
+                </div>
+                <div className="eai-modal-col">
+                  <div className="eai-form-section">
+                    <h4>WS-Security 인증</h4>
+                    <div className="modal-field">
+                      <label className="req">보안 유형</label>
+                      <select value={form.wsSecurityType}
+                        onChange={e => setForm(f => ({ ...f, wsSecurityType: e.target.value }))}>
+                        {WS_SEC_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                      </select>
+                    </div>
+                    {form.wsSecurityType === 'USERNAME_TOKEN' && <>
+                      {fv('wsUsername', 'WS 사용자명', '', true)}
+                      {fp('wsPassword', 'WS 비밀번호',     true)}
+                      <div className="modal-field">
+                        <label className="req">비밀번호 유형</label>
+                        <select value={form.wsPasswordType}
+                          onChange={e => setForm(f => ({ ...f, wsPasswordType: e.target.value }))}>
+                          <option value="PasswordText">PasswordText</option>
+                          <option value="PasswordDigest">PasswordDigest</option>
+                        </select>
+                      </div>
+                    </>}
+                    {form.wsSecurityType === 'X509' && <>
+                      {fv('keystorePath',     '키스토어 경로',     '', true)}
+                      {fp('keystorePassword', '키스토어 비밀번호', true)}
+                    </>}
+                  </div>
+                  <div className="eai-form-section">
+                    <h4>요청 / 응답</h4>
+                    <div className="modal-field modal-field-v">
+                      <label>요청 템플릿 (XML)</label>
+                      <textarea rows={6} value={form.requestTemplate ?? ''}
+                        style={{ fontFamily: 'monospace', fontSize: '0.8rem' }}
+                        onChange={e => setForm(f => ({ ...f, requestTemplate: e.target.value }))} />
+                    </div>
+                    {fv('responsePath', '응답 XPath 경로')}
+                    <div className="modal-field">
+                      <label>활성화</label>
+                      <select value={form.isActive ? 'true' : 'false'}
+                        onChange={e => setForm(f => ({ ...f, isActive: e.target.value === 'true' }))}>
+                        <option value="true">활성</option>
+                        <option value="false">비활성</option>
+                      </select>
+                    </div>
                   </div>
                 </div>
               </div>

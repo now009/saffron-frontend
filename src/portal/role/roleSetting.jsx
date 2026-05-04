@@ -1,12 +1,22 @@
+// ============================================================
+// 권한설정관리 — 권한별 메뉴/사용자/부서 매핑 일괄 편집 화면
+// 라우트: /portal/rolesetting/list
+// 레이아웃: 좌측 권한 목록 + 우측 3탭(메뉴권한 / 사용자 / 부서)
+// 트리 토글 동작: 부모 체크/해제 시 모든 하위 노드 자동 동기화 (depth 기반 슬라이스)
+// 저장 응답: { code: '200', data: [...] } 표준 envelope 사용
+// ============================================================
 import { useState, useEffect, useRef } from 'react'
 import apiUri from '../../api/apiUri'
 import serverConfig from '../../config/serverConfig'
 import '../common/css/grid.css'
 
+// 표준 응답 envelope에서 data 추출 — code !== '200'이면 빈 배열로 안전 처리
 const extractData = (res) => (res?.code === '200' ? (res.data ?? []) : [])
 
 const PAGE_SIZE = 30
 
+// 평면 배열 → 트리 순회 평탄화 (메뉴/부서 공용)
+// sortOrder + id 사전순으로 안정 정렬, depth 정보 부착
 const buildTreeBy = (rows, idKey, parentKey) => {
   const byId        = new Map(rows.map(r => [r[idKey], r]))
   const childrenMap = new Map()
@@ -40,6 +50,7 @@ const buildDeptTree = (depts) => buildTreeBy(depts, 'deptId', 'parentDeptId')
 const asArray = (data) =>
   Array.isArray(data) ? data : data?.data ?? data?.list ?? data?.content ?? []
 
+// 2.5초 자동 사라지는 토스트 — 저장 완료 알림용 (alert 대체)
 function Toast({ message, onDismiss }) {
   useEffect(() => {
     const t = setTimeout(onDismiss, 2500)
@@ -137,6 +148,8 @@ function TreeCell({ name, depth }) {
   )
 }
 
+// ─── 탭 1: 메뉴권한 (체크박스로 메뉴 사용여부 일괄 편집) ───
+// 헤더 체크박스 indeterminate 처리: 전체 선택 X, 일부 선택 시 회색 표시
 function MenuPermTab({ menus, loading, checkedMenus, onCheck, onToggleAll, onSave, roleName }) {
   const allChecked  = menus.length > 0 && menus.every(m => checkedMenus.has(m.menuId))
   const someChecked = menus.some(m => checkedMenus.has(m.menuId))
@@ -202,6 +215,8 @@ function MenuPermTab({ menus, loading, checkedMenus, onCheck, onToggleAll, onSav
   )
 }
 
+// ─── 탭 2: 사용자 (권한에 매핑된 사용자 일괄 편집) ───
+// 전체 사용자 + 현재 권한 매핑 사용자를 병렬 조회 후, 매핑 여부를 체크박스로 표현
 function RoleUserTab({ roleCode, roleName, onToast }) {
   const [users, setUsers]             = useState([])
   const [checked, setChecked]         = useState(new Set())
@@ -361,6 +376,7 @@ function RoleUserTab({ roleCode, roleName, onToast }) {
   )
 }
 
+// ─── 탭 3: 부서 (트리 구조, 부모 체크 시 자식 자동 동기화) ───
 function RoleDeptTab({ roleCode, roleName, onToast }) {
   const [depts, setDepts]             = useState([])
   const [checked, setChecked]         = useState(new Set())
@@ -404,6 +420,8 @@ function RoleDeptTab({ roleCode, roleName, onToast }) {
     if (cbRef.current) cbRef.current.indeterminate = !allChecked && someChecked
   }, [allChecked, someChecked])
 
+  // 부모 노드를 체크/해제하면 그 아래 모든 자식도 함께 반영
+  // depth 기반: 자기 자신 다음 노드부터, 자기 depth보다 큰 노드까지 = 자손
   const toggleOne = (deptId, on) => {
     const idx = depts.findIndex(d => d.deptId === deptId)
     if (idx === -1) return
@@ -533,6 +551,7 @@ const TABS = [
   { key: 'dept', label: '부서' },
 ]
 
+// ─── 메인 — 좌측 권한 목록 + 우측 탭 컨테이너 ───
 function RoleSetting() {
   const [roles,        setRoles]        = useState([])
   const [selectedRole, setSelectedRole] = useState(null)
@@ -571,6 +590,7 @@ function RoleSetting() {
     setActiveTab('menu')
   }
 
+  // 메뉴 트리에서도 부모 토글 시 자식 일괄 반영 (부서와 동일 패턴)
   const handleCheckMenu = (menuId, checked) => {
     const idx = menus.findIndex(m => m.menuId === menuId)
     if (idx === -1) return

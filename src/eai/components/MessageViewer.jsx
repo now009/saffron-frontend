@@ -1,5 +1,11 @@
+// ============================================================
+// MessageViewer — 메시지 본문 뷰어 (요청/응답 페이로드 표시용)
+// 사용처: MessageHistory 모달, InterfaceForm 테스트 결과
+// 기능: JSON 정렬 모드 ↔ RAW 토글, 접기/펼치기, 어두운 코드 블록 스타일
+// ============================================================
 import { useState } from 'react'
 
+// JSON 모드에서 파싱 가능하면 들여쓰기, 실패 시 원본 그대로 — XML/Plain 텍스트도 안전하게 처리.
 function tryFormat(text, mode) {
   if (!text) return ''
   if (mode === 'json') {

@@ -1,3 +1,8 @@
+// ============================================================
+// 스케줄관리 — 미구현 placeholder 화면
+// 라우트: /portal/schedules/list
+// 추후 portal 측 스케줄러 CRUD 구현 예정 (EAI 측은 src/eai/pages/ScheduleList.jsx)
+// ============================================================
 function Schedule() {
   return (
     <div className="content-area">

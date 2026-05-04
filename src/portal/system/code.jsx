@@ -1,3 +1,9 @@
+// ============================================================
+// 코드관리 — 시스템 공통코드 트리 CRUD (parentCode 기반 계층)
+// 라우트: /portal/codes/list
+// 검색: 코드/코드명, 페이지네이션 클라이언트 측 슬라이스 (PAGE_SIZE=15)
+// 삭제 가능 조건: 자식 코드가 없을 때만 액션 메뉴 노출 (showAction)
+// ============================================================
 import { useState, useEffect, useRef } from 'react'
 import apiUri from '../../api/apiUri'
 import serverConfig from '../../config/serverConfig'
@@ -17,6 +23,7 @@ const COLUMNS = [
   { key: '__action',    label: '',       width: '48px'  },
 ]
 
+// 백엔드는 트리 구조로 응답 → 클라이언트에서 평면 배열로 펼치고 depth 정보 부착 (그리드 렌더용)
 function flattenTree(nodes, depth = 0, parentCode = '') {
   const result = []
   for (const node of nodes) {
@@ -83,6 +90,7 @@ function ActionMenu({ row, onEdit, onDelete }) {
   )
 }
 
+// ─── 등록/수정 모달 — 신규 등록 시 코드 중복확인(checkCode) 의무 통과 후에만 저장 가능 ───
 function CodeModal({ mode, form: initialForm, parentCodes, onClose, onSave }) {
   const [form, setForm]           = useState(initialForm)
   const [codeStatus, setCodeStatus] = useState(null)
@@ -118,6 +126,7 @@ function CodeModal({ mode, form: initialForm, parentCodes, onClose, onSave }) {
     }
   }
 
+  // 신규 등록일 때 사용자가 중복확인을 누르지 않았다면 저장 직전에 자동 호출 — UX 안전장치
   const handleSubmit = async () => {
     if (!form.code)     { alert('코드를 입력하세요');   return }
     if (!isEdit && codeStatus !== 'ok') {
@@ -125,6 +134,7 @@ function CodeModal({ mode, form: initialForm, parentCodes, onClose, onSave }) {
       if (!ok) return
     }
     if (!form.codeName) { alert('코드명을 입력하세요'); return }
+    // 빈 문자열 parentCode를 null로 변환 — 백엔드가 '없음(최상위)'으로 인식
     onSave({ ...form, parentCode: form.parentCode || null })
   }
 
@@ -211,6 +221,7 @@ function SearchIcon() {
   )
 }
 
+// 페이지 윈도우(±2)만 보이는 페이지네이션 — 페이지 수 많아도 상하 화살표·범위 점프 가능
 function Pagination({ current, total, onChange }) {
   const WINDOW = 5
   let start = Math.max(1, current - Math.floor(WINDOW / 2))
@@ -340,6 +351,7 @@ function Code() {
     }
   }
 
+  // 자식이 있는 코드는 수정/삭제 메뉴를 숨김 — 부모 삭제로 인한 데이터 정합성 깨짐 방지
   const depth    = (row) => row.depth ?? 0
   const hasChild = new Set(rows.map((r) => r.parentCode).filter(Boolean))
   const showAction = (row) => !hasChild.has(row.code)

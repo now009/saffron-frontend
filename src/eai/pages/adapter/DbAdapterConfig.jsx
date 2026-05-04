@@ -1,7 +1,14 @@
+// ============================================================
+// DB 어댑터 설정 — 인터페이스가 사용할 SQL/Procedure 매핑 정보
+// 라우트: /eai/db-adapter-configs
+// 핵심 필드: interfaceId(1:1), datasourceId(DB 연결 참조), statementId(MyBatis namespace)
+// 작업유형(QUERY/INSERT/UPDATE/DELETE/PROCEDURE) + 결과유형(LIST/SINGLE/COUNT/NONE)으로 동작 결정
+// ============================================================
 import { useEffect, useRef, useState } from 'react'
 import eaiApi from '../../api/eaiApi'
 import '../../eai.css'
 
+// 행별 수정/삭제 메뉴 — 4개 어댑터 페이지 공통 패턴 (현재는 각 파일에 중복 정의)
 function ActionMenu({ row, onEdit, onDelete }) {
   const [open, setOpen]     = useState(false)
   const [openUp, setOpenUp] = useState(false)
@@ -48,6 +55,17 @@ const defaultForm = {
   resultType: 'LIST', paramMapping: '', rollbackOnError: true, isActive: true,
 }
 
+// 기본정보 박스 5개 필드 모두 필수
+const REQUIRED_FIELDS = {
+  interfaceId:   '인터페이스ID',
+  datasourceId:  'DataSource ID',
+  statementId:   'Statement ID',
+  operationType: '작업 유형',
+  resultType:    '결과 유형',
+}
+
+const isEmpty = (v) => v === '' || v === null || v === undefined
+
 function SearchIcon() {
   return (
     <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
@@ -78,7 +96,16 @@ function DbAdapterConfig() {
   const openEdit = (item) => { setForm({ ...defaultForm, ...item }); setModal('edit') }
   const closeModal = () => setModal(null)
 
+  const validate = () => {
+    for (const [key, label] of Object.entries(REQUIRED_FIELDS)) {
+      if (isEmpty(form[key])) return `${label} 항목은 필수입니다.`
+    }
+    return null
+  }
+
   const handleSave = async () => {
+    const err = validate()
+    if (err) { alert(err); return }
     setSaving(true)
     try {
       if (modal === 'edit') await eaiApi.dbAdapterConfig.update(form.id, form)
@@ -94,9 +121,9 @@ function DbAdapterConfig() {
     load()
   }
 
-  const f = (key, label, placeholder = '') => (
+  const f = (key, label, placeholder = '', req = false) => (
     <div className="modal-field" key={key}>
-      <label>{label}</label>
+      <label className={req ? 'req' : ''}>{label}</label>
       <input type="text" value={form[key] ?? ''} placeholder={placeholder}
         onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))} />
     </div>
@@ -115,7 +142,6 @@ function DbAdapterConfig() {
                 <input type="text" placeholder="인터페이스ID" value={filter.interfaceId}
                   onChange={e => setFilter(f => ({ ...f, interfaceId: e.target.value }))}
                   onKeyDown={e => e.key === 'Enter' && load()} />
-                <button className="grid-search-btn" onClick={load}><SearchIcon /></button>
               </div>
               <div className="grid-search-bar">
                 <input type="text" placeholder="DataSource ID" value={filter.datasourceId}
@@ -158,10 +184,10 @@ function DbAdapterConfig() {
                   <tr key={item.id}>
                     <td>{item.interfaceId}</td>
                     <td>{item.datasourceId}</td>
-                    <td style={{ fontSize: 12, color: '#6b7280' }}>{item.statementId}</td>
+                    <td className="eai-cell-mute">{item.statementId}</td>
                     <td>{item.operationType}</td>
                     <td>{item.resultType}</td>
-                    <td style={{ textAlign: 'center' }}>
+                    <td className="eai-cell-center">
                       <span className={`eai-status-badge ${item.isActive ? 'ACTIVE' : 'INACTIVE'}`}>
                         {item.isActive ? 'Y' : 'N'}
                       </span>
@@ -177,59 +203,62 @@ function DbAdapterConfig() {
         </div>
       </div>
 
+      {/* ─── 등록/수정 모달 — 좌: 기본정보, 우: 추가설정(파라미터 매핑·롤백·활성) ─── */}
       {modal && (
         <div className="modal-overlay" onClick={closeModal}>
-          <div className="modal-box" style={{ width: 800 }} onClick={e => e.stopPropagation()}>
+          <div className="modal-box" style={{ width: 920 }} onClick={e => e.stopPropagation()}>
             <div className="modal-header">
-              <span>{modal === 'edit' ? 'DB 어댑터 설정 수정' : 'DB 어댑터 설정 등록'}</span>
-              <button onClick={closeModal} style={{ background: 'none', border: 'none', fontSize: 18, cursor: 'pointer' }}>×</button>
+              <span className="modal-title">{modal === 'edit' ? 'DB 어댑터 설정 수정' : 'DB 어댑터 설정 등록'}</span>
+              <button className="modal-close" onClick={closeModal}>✕</button>
             </div>
-            <div className="modal-body" style={{ display: 'flex', flexDirection: 'row', gap: 16, alignItems: 'flex-start' }}>
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 12 }}>
-                <div className="eai-form-section">
-                  <h4>기본 정보</h4>
-                  {f('interfaceId',  '인터페이스ID',  'IF-0001')}
-                  {f('datasourceId', 'DataSource ID', 'DS_ERP')}
-                  {f('statementId',  'Statement ID',  'com.mapper.EaiMapper.selectData')}
-                  <div className="modal-field">
-                    <label>작업 유형</label>
-                    <select value={form.operationType}
-                      onChange={e => setForm(f => ({ ...f, operationType: e.target.value }))}>
-                      {OP_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
-                    </select>
-                  </div>
-                  <div className="modal-field">
-                    <label>결과 유형</label>
-                    <select value={form.resultType}
-                      onChange={e => setForm(f => ({ ...f, resultType: e.target.value }))}>
-                      {RESULT_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
-                    </select>
+            <div className="modal-body">
+              <div className="eai-modal-grid">
+                <div className="eai-modal-col">
+                  <div className="eai-form-section">
+                    <h4>기본 정보</h4>
+                    {f('interfaceId',  '인터페이스ID',  'IF-0001',                          true)}
+                    {f('datasourceId', 'DataSource ID', 'DS_ERP',                           true)}
+                    {f('statementId',  'Statement ID',  'com.mapper.EaiMapper.selectData', true)}
+                    <div className="modal-field">
+                      <label className="req">작업 유형</label>
+                      <select value={form.operationType}
+                        onChange={e => setForm(f => ({ ...f, operationType: e.target.value }))}>
+                        {OP_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                      </select>
+                    </div>
+                    <div className="modal-field">
+                      <label className="req">결과 유형</label>
+                      <select value={form.resultType}
+                        onChange={e => setForm(f => ({ ...f, resultType: e.target.value }))}>
+                        {RESULT_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                      </select>
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 12 }}>
-                <div className="eai-form-section">
-                  <h4>추가 설정</h4>
-                  <div className="modal-field">
-                    <label>파라미터 매핑 (JSON)</label>
-                    <textarea rows={6} value={form.paramMapping ?? ''}
-                      onChange={e => setForm(f => ({ ...f, paramMapping: e.target.value }))} />
-                  </div>
-                  <div className="modal-field">
-                    <label>오류 시 롤백</label>
-                    <select value={form.rollbackOnError ? 'true' : 'false'}
-                      onChange={e => setForm(f => ({ ...f, rollbackOnError: e.target.value === 'true' }))}>
-                      <option value="true">예</option>
-                      <option value="false">아니오</option>
-                    </select>
-                  </div>
-                  <div className="modal-field">
-                    <label>활성화</label>
-                    <select value={form.isActive ? 'true' : 'false'}
-                      onChange={e => setForm(f => ({ ...f, isActive: e.target.value === 'true' }))}>
-                      <option value="true">활성</option>
-                      <option value="false">비활성</option>
-                    </select>
+                <div className="eai-modal-col">
+                  <div className="eai-form-section">
+                    <h4>추가 설정</h4>
+                    <div className="modal-field modal-field-v">
+                      <label>파라미터 매핑 (JSON)</label>
+                      <textarea rows={6} value={form.paramMapping ?? ''}
+                        onChange={e => setForm(f => ({ ...f, paramMapping: e.target.value }))} />
+                    </div>
+                    <div className="modal-field">
+                      <label>오류 시 롤백</label>
+                      <select value={form.rollbackOnError ? 'true' : 'false'}
+                        onChange={e => setForm(f => ({ ...f, rollbackOnError: e.target.value === 'true' }))}>
+                        <option value="true">예</option>
+                        <option value="false">아니오</option>
+                      </select>
+                    </div>
+                    <div className="modal-field">
+                      <label>활성화</label>
+                      <select value={form.isActive ? 'true' : 'false'}
+                        onChange={e => setForm(f => ({ ...f, isActive: e.target.value === 'true' }))}>
+                        <option value="true">활성</option>
+                        <option value="false">비활성</option>
+                      </select>
+                    </div>
                   </div>
                 </div>
               </div>

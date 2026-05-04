@@ -1,3 +1,9 @@
+// ============================================================
+// 게시판관리 — 게시판(컨테이너) CRUD 마스터
+// 라우트: /portal/boards/list
+// 게시판 1개 = 게시글 N개의 컨테이너. 보드별 권한·옵션(첨부/익명/댓글 등) 별도 설정
+// 카드 그리드 형태(테이블 아님), 카드 클릭 시 해당 게시판의 글 목록(post.jsx)으로 이동
+// ============================================================
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import apiUri from '../../api/apiUri'
@@ -40,6 +46,7 @@ const EMPTY_BOARD = {
   useYn: 'Y',
 }
 
+// ─── 게시판 등록/수정 모달 — 옵션·권한·표시 설정 일괄 편집 ───
 function BoardModal({ mode, form: initialForm, stats, onClose, onSave, onDelete }) {
   const [form, setForm] = useState(initialForm)
   const isEdit = mode === 'edit'
@@ -177,6 +184,7 @@ function BoardModal({ mode, form: initialForm, stats, onClose, onSave, onDelete 
   )
 }
 
+// ─── 메인 — 게시판 카드 그리드 + 검색 + 등록 ───
 function Board() {
   const navigate = useNavigate()
   const [rows, setRows]       = useState([])

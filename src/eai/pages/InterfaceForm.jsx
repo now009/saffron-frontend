@@ -1,3 +1,10 @@
+// ============================================================
+// 인터페이스 등록·수정 — 4단계 위저드 폼
+// 라우트: /eai/interfaces/new , /eai/interfaces/:id/edit
+// 단계: 기본정보 → 어댑터 설정 → 매핑 규칙 → 검토 · 테스트
+// 저장 시 인터페이스/어댑터/매핑 API를 순차 호출 (트랜잭션성 보장 안 됨 — 중간 실패 시 부분 저장 가능성)
+// 4단계에서 interface.test() 로 페이로드 시험전송 후 결과를 MessageViewer로 표시
+// ============================================================
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import AdapterConfigForm from '../components/AdapterConfigForm'
@@ -26,6 +33,7 @@ function InterfaceForm() {
   const [saving, setSaving]             = useState(false)
   const [loading, setLoading]           = useState(isEdit)
 
+  // 수정 모드일 때만 기존 데이터 로드 — 신규 등록은 defaultForm 그대로 사용
   useEffect(() => {
     if (!isEdit) return
     Promise.all([
@@ -46,6 +54,8 @@ function InterfaceForm() {
     }).catch(() => {}).finally(() => setLoading(false))
   }, [id, isEdit])
 
+  // 인터페이스 → 어댑터 → 매핑 순차 저장.
+  // 주의: 중간 단계에서 실패해도 이전 단계의 결과는 롤백되지 않음 (백엔드 트랜잭션 미보장).
   const handleSave = async () => {
     setSaving(true)
     try {
@@ -82,6 +92,7 @@ function InterfaceForm() {
       <div className="content-body">
       <h2 style={{ fontSize: '1.05rem', fontWeight: 700, marginBottom: 16, color: '#1e2530' }}>{isEdit ? '인터페이스 수정' : '인터페이스 등록'}</h2>
 
+      {/* ─── 단계 인디케이터 — 클릭으로 임의 단계 점프 가능 (검증 없음) ─── */}
       <div className="wizard-steps">
         {STEPS.map((s, i) => (
           <button
@@ -93,6 +104,7 @@ function InterfaceForm() {
         ))}
       </div>
 
+      {/* ─── 1단계: 기본 정보 ─── */}
       {step === 0 && (
         <div className="eai-form-section">
           <h4>기본 정보</h4>
@@ -129,14 +141,17 @@ function InterfaceForm() {
         </div>
       )}
 
+      {/* ─── 2단계: 어댑터 설정 (REST/SOAP/DB/FILE 다형) ─── */}
       {step === 1 && (
         <AdapterConfigForm adapterType={form.adapterType} config={adapter} onChange={setAdapter} />
       )}
 
+      {/* ─── 3단계: 매핑 규칙 ─── */}
       {step === 2 && (
         <MappingRuleEditor rules={rules} onChange={setRules} />
       )}
 
+      {/* ─── 4단계: 검토·테스트 (페이로드 시험전송) ─── */}
       {step === 3 && (
         <div>
           <div className="eai-form-section">

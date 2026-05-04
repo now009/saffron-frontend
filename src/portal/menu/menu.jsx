@@ -1,3 +1,11 @@
+// ============================================================
+// 메뉴관리 — 사이트별 메뉴 트리 CRUD (parentMenuId 기반 계층)
+// 라우트: /portal/menus/list
+// 핵심 분기:
+//   - menuDirYn='Y'(디렉토리)는 programId/programUrl 미보유, 자식만 가짐
+//   - menuDirYn='N'(리프)은 ProgramSelectModal로 프로그램과 연결
+// 사이트(SITE_ID)는 URL pathname으로 판단 — TOP_MENUS 기반 라우트별 사이트 분리
+// ============================================================
 import { useState, useEffect, useRef } from 'react'
 import { useLocation } from 'react-router-dom'
 import apiUri from '../../api/apiUri'
@@ -82,6 +90,7 @@ function ActionMenu({ row, onEdit, onDelete, canDelete = true }) {
   )
 }
 
+// ─── 프로그램 선택 서브모달 — 메뉴 등록/수정 시 프로그램 ID 검색 후 선택 ───
 function ProgramSelectModal({ onClose, onSelect }) {
   const [programs, setPrograms]   = useState([])
   const [loading, setLoading]     = useState(false)
@@ -169,6 +178,7 @@ function ProgramSelectModal({ onClose, onSelect }) {
   )
 }
 
+// ─── 메뉴 등록/수정 모달 — 신규 시 menuId 자동 채번, 부모 메뉴 선택 시 menuLevel 자동 +1 ───
 function MenuModal({ mode, form: initialForm, onClose, onSave }) {
   const [form, setForm]               = useState(initialForm)
   const [parentMenus, setParentMenus] = useState([])
@@ -192,6 +202,7 @@ function MenuModal({ mode, form: initialForm, onClose, onSave }) {
     setForm((prev) => ({ ...prev, [key]: val }))
   }
 
+  // 부모 메뉴 변경 시 menuLevel 자동 계산 — 사용자가 직접 입력하지 않도록
   const handleParentChange = (val) => {
     const parent = parentMenus.find((m) => m.menuId === val)
     setForm((prev) => ({
@@ -353,6 +364,7 @@ function Pagination({ current, total, onChange }) {
   )
 }
 
+// ─── 메인 — 사이트별 메뉴 트리 그리드 + 검색 + CRUD ───
 function Menu() {
   const location = useLocation()
   const initialSite =
@@ -473,6 +485,7 @@ function Menu() {
     }
   }
 
+  // 자식 메뉴가 있으면 삭제 불가 (수정은 허용)
   const hasChildIds = new Set(rows.map((r) => r.parentMenuId).filter(Boolean))
   const canDelete   = (row) => !hasChildIds.has(row.menuId)
 

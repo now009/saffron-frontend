@@ -1,3 +1,9 @@
+// ============================================================
+// 메시지 처리 이력 — 인터페이스가 처리한 모든 메시지의 송수신 기록
+// 라우트: /eai/history
+// 동작: 상태/날짜/인터페이스ID 필터, 행 클릭 시 모달로 요청·응답 본문 표시
+//       FAIL/DLQ 상태 메시지에서만 재처리 버튼 노출
+// ============================================================
 import { useEffect, useState } from 'react'
 import StatusBadge from '../components/StatusBadge'
 import MessageViewer from '../components/MessageViewer'
@@ -130,6 +136,7 @@ function MessageHistory() {
         </div>
       </div>
 
+      {/* ─── 메시지 상세 모달 — 행 클릭 시 표시, 외부 클릭 시 닫힘 ─── */}
       {selected && (
         <div className="modal-overlay" onClick={() => setSelected(null)}>
           <div className="modal-box" style={{ width: 720, maxHeight: '80vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
@@ -164,6 +171,7 @@ function MessageHistory() {
               <MessageViewer value={selected.responseBody} />
             </div>
 
+            {/* 재처리는 FAIL/DLQ에서만 의미 있음 — SUCCESS/RETRY 상태는 닫기 버튼만 */}
             {['FAIL', 'DLQ'].includes(selected.status) && (
               <div className="modal-footer">
                 <button className="modal-btn-save" onClick={handleRetry} disabled={retrying}>

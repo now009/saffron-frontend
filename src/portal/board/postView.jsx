@@ -1,3 +1,9 @@
+// ============================================================
+// 게시글 상세 — 본문 + 첨부파일 + 댓글(2-depth: 댓글 + 답글)
+// 라우트: /portal/boards/:boardId/:postId
+// 댓글 정렬: 부모(depth=0) 하단에 자식(depth=1) 답글 평면 노출 — 백엔드가 트리 정렬해서 내려줌
+// 좋아요/수정/삭제는 작성자 본인만 (isAdmin은 모든 글 삭제 가능)
+// ============================================================
 import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import apiUri from '../../api/apiUri'
@@ -5,8 +11,10 @@ import serverConfig from '../../config/serverConfig'
 import '../common/css/grid.css'
 import './board.css'
 
+// 'YYYY-MM-DDTHH:MM:SS' → 'YYYY-MM-DD HH:MM' (분 단위까지만 표시)
 const formatDate = (d) => (d ? String(d).replace('T', ' ').slice(0, 16) : '-')
 
+// ─── 단일 댓글 — 답글은 depth=1로 들여쓰기, 본인 댓글만 수정/삭제 노출 ───
 function CommentItem({ comment, currentUser, onReply, onEdit, onDelete, onToggleLike }) {
   const isOwner = comment.createdUser === currentUser
   const [editing, setEditing] = useState(false)
@@ -56,6 +64,7 @@ function CommentItem({ comment, currentUser, onReply, onEdit, onDelete, onToggle
   )
 }
 
+// ─── 메인 — 게시글 본문/첨부/댓글 렌더 + 댓글 작성/답글/좋아요 핸들러 ───
 function PostView() {
   const navigate = useNavigate()
   const { boardId, postId } = useParams()
@@ -72,6 +81,7 @@ function PostView() {
   const [replyTo, setReplyTo]         = useState(null) // {commentId, createdUser}
   const [replyText, setReplyText]     = useState('')
 
+  // 글 상세 + 첨부파일 + 댓글 3개 API 병렬 호출 — 의존관계 없으므로 병렬화 안전
   const fetchAll = async () => {
     setLoading(true)
     try {

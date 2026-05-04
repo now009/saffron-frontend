@@ -1,3 +1,9 @@
+// ============================================================
+// 부서관리 — 부서 트리 CRUD (parentDeptId 기반 계층)
+// 라우트: /portal/depts/list
+// 부서코드는 영문/숫자만 허용, 신규 등록 시 중복확인 필수
+// 부서ID는 신규 등록 시 백엔드 nextId로 자동 채번 (사용자 입력 불가)
+// ============================================================
 import { useState, useEffect, useRef } from 'react'
 import apiUri from '../../api/apiUri'
 import serverConfig from '../../config/serverConfig'
@@ -76,6 +82,7 @@ function ActionMenu({ row, onEdit, onDelete }) {
   )
 }
 
+// ─── 등록/수정 모달 — 신규 등록 시 deptId 자동 채번 + 부서코드 중복확인 필수 ───
 function DeptModal({ mode, form: initialForm, onClose, onSave }) {
   const [form, setForm]         = useState(initialForm)
   const [parentDepts, setParentDepts] = useState([])
@@ -289,6 +296,8 @@ function Pagination({ current, total, onChange }) {
   )
 }
 
+// ─── 메인 — 부서 트리 그리드 + 검색 + CRUD ───
+// 백엔드는 deptNameTree(들여쓰기 기호 포함된 문자열)와 deptLevel을 함께 내려줌
 function Dept() {
   const [rows, setRows]       = useState([])
   const [loading, setLoading] = useState(true)
@@ -392,6 +401,7 @@ function Dept() {
     }
   }
 
+  // 자식 부서가 있는 항목은 수정/삭제 메뉴 숨김 — 부모 삭제로 인한 트리 깨짐 방지
   const hasChildIds = new Set(rows.map((r) => r.parentDeptId).filter(Boolean))
   const showAction  = (row) => !hasChildIds.has(row.deptId)
 

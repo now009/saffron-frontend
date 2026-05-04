@@ -1,3 +1,8 @@
+// ============================================================
+// 환경설정관리 — 미구현 placeholder 화면
+// 라우트: /portal/env-settings/list
+// 추후 시스템 글로벌 설정 CRUD 구현 예정
+// ============================================================
 function EnvSetting() {
   return (
     <div className="content-area">

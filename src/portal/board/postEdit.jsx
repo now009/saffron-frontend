@@ -1,3 +1,9 @@
+// ============================================================
+// 게시글 등록/수정 — 단일 컴포넌트가 신규/수정 두 모드 처리
+// 라우트: /portal/boards/:boardId/write (신규) , /portal/boards/:boardId/write/:postId (수정)
+// 첨부파일: 기존 파일(files)은 즉시 삭제 가능, 새 파일(newFiles)은 저장 시 일괄 업로드
+// 게시판 옵션(allowAttach/allowAnonymous/allowSecret 등)에 따라 입력 필드 조건부 노출
+// ============================================================
 import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import apiUri from '../../api/apiUri'
@@ -30,8 +36,8 @@ function PostEdit() {
 
   const [board, setBoard]       = useState(null)
   const [form, setForm]         = useState({ ...EMPTY_FORM, boardId })
-  const [files, setFiles]       = useState([])    // existing files (edit mode)
-  const [newFiles, setNewFiles] = useState([])    // newly chosen files
+  const [files, setFiles]       = useState([])    // 수정 모드에서 기존 첨부파일 — fileId 보유, 즉시 삭제 가능
+  const [newFiles, setNewFiles] = useState([])    // 사용자가 이번 세션에 새로 추가한 파일 — 저장 시 업로드
   const [loading, setLoading]   = useState(isEdit)
 
   useEffect(() => {
@@ -41,6 +47,7 @@ function PostEdit() {
       .catch(() => {})
   }, [boardId])
 
+  // 수정 모드: 글 + 첨부파일 병렬 조회 / 신규 모드: postId 자동 채번
   useEffect(() => {
     if (isEdit) {
       Promise.all([

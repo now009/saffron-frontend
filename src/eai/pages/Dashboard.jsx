@@ -1,3 +1,9 @@
+// ============================================================
+// EAI 대시보드 — 운영 KPI + 시간별 차트
+// 라우트: /eai
+// 데이터: monitoring.snapshot() 단일 API, 10초 폴링
+// 임계치 도달 시 경고 배너(Kafka Lag>1000, DLQ>100) 자동 노출
+// ============================================================
 import { useEffect, useState } from 'react'
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
 import KpiCard from '../components/KpiCard'
@@ -11,10 +17,11 @@ function Dashboard() {
   const load = () => {
     eaiApi.monitoring.snapshot()
       .then(setSnap)
-      .catch(() => {})
+      .catch(() => {})  // 폴링 실패 시 직전 데이터 유지 — 잠깐의 네트워크 끊김에 화면이 비지 않게
       .finally(() => setLoading(false))
   }
 
+  // 10초 주기 폴링 — 페이지 이탈 시 cleanup으로 인터벌 해제 (메모리 누수 방지)
   useEffect(() => {
     load()
     const timer = setInterval(load, 10000)
@@ -35,6 +42,7 @@ function Dashboard() {
         <KpiCard label="활성 인터페이스"   value={String(snap.activeInterfaceCount ?? 0)} sub="개" />
       </div>
 
+      {/* ─── 임계치 경고 배너 (조건부 노출) ─── */}
       {snap.kafkaConsumerLag > 1000 && (
         <div className="eai-alert warning">
           Kafka Consumer Lag: {snap.kafkaConsumerLag.toLocaleString()}건 — 처리 지연 발생
@@ -46,6 +54,7 @@ function Dashboard() {
         </div>
       )}
 
+      {/* ─── 시간별 처리량 라인차트 (백엔드 hourlyTrend 배열 비어있으면 미노출) ─── */}
       {snap.hourlyTrend?.length > 0 && (
         <div className="chart-section">
           <h3>시간별 처리량</h3>
@@ -60,6 +69,7 @@ function Dashboard() {
         </div>
       )}
 
+      {/* ─── 오류 유형별 발생 건수 바차트 ─── */}
       {snap.errorBreakdown?.length > 0 && (
         <div className="chart-section">
           <h3>오류 유형별 현황</h3>

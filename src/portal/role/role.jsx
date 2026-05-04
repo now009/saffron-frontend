@@ -1,3 +1,9 @@
+// ============================================================
+// 권한관리 — 권한(Role) CRUD 마스터
+// 라우트: /portal/roles/list
+// 권한별 메뉴 매핑은 별도 화면(RoleSetting)에서 관리
+// 권한코드는 신규 등록 시 백엔드 nextId 호출로 자동 채번 (사용자 입력 불가)
+// ============================================================
 import { useState, useEffect, useRef } from 'react'
 import apiUri from '../../api/apiUri'
 import serverConfig from '../../config/serverConfig'
@@ -63,10 +69,13 @@ function ActionMenu({ row, onEdit, onDelete }) {
   )
 }
 
+// ─── 등록/수정 모달 — 신규 시 권한코드 자동 채번, 수정 시 권한코드 readonly ───
 function RoleModal({ mode, form: initialForm, onClose, onSave }) {
   const [form, setForm] = useState(initialForm)
   const isEdit = mode === 'edit'
 
+  // 신규 등록 진입 시 백엔드에서 다음 권한코드 받아와서 readonly 표시
+  // 응답 형식이 { roleCode } / { nextId } / 문자열 등 다양해서 가드 처리
   useEffect(() => {
     if (isEdit) return
     fetch(apiUri.role.nextId(), { headers: serverConfig.token.authHeader() })
@@ -151,6 +160,7 @@ function Pagination({ current, total, onChange }) {
   )
 }
 
+// ─── 메인 — 권한 목록 그리드 + 검색 + 등록/수정/삭제 ───
 function Role() {
   const [rows, setRows]       = useState([])
   const [loading, setLoading] = useState(true)

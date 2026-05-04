@@ -1,3 +1,9 @@
+// ============================================================
+// 게시글 목록 — 특정 게시판의 글 목록 (board → 클릭 시 진입)
+// 라우트: /portal/boards/posts/:boardId
+// 권한: 게시판 writeRole(ALL/USER/ADMIN)에 따라 글쓰기 버튼 분기
+// 익명 게시판은 작성자명 마스킹, 비공개 글은 권한 체크 후 표시
+// ============================================================
 import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import apiUri from '../../api/apiUri'
@@ -21,6 +27,7 @@ function SearchIcon() {
   )
 }
 
+// 작성일이 days일 이내면 "NEW" 배지 표시 — board.newDays 설정값에 따라 다름
 function isNew(createdDate, days = 3) {
   if (!createdDate) return false
   const d = new Date(String(createdDate).replace(' ', 'T'))
@@ -28,6 +35,7 @@ function isNew(createdDate, days = 3) {
   return (Date.now() - d.getTime()) / (1000 * 60 * 60 * 24) <= days
 }
 
+// 게시판 writeRole(ALL/USER/ADMIN)을 기반으로 현재 사용자의 글쓰기 권한 판정
 function canWrite(board, isAdmin) {
   const role = String(board?.writeRole ?? 'USER').toUpperCase()
   if (role === 'ALL')   return true

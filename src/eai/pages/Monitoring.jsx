@@ -1,8 +1,15 @@
+// ============================================================
+// 실시간 모니터링 — Kafka Lag/TPS/DLQ 등 운영 지표 시계열 추이
+// 라우트: /eai/monitoring
+// 데이터: monitoring.snapshot() 5초 폴링, 클라이언트에서 30개 시점 슬라이딩 윈도우 보관
+//         (서버에서 시계열을 주는 것이 아니라 폴링 결과를 누적하는 방식)
+// ============================================================
 import { useEffect, useState } from 'react'
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 import eaiApi from '../api/eaiApi'
 import '../eai.css'
 
+// 임계치 기반 카드 배경색 변경 (warn=노랑, danger=빨강) — 한눈에 위험도 식별
 function MetricCard({ label, value, unit = '', warn, danger }) {
   let bg = '#fff'
   if (danger && value >= danger) bg = '#fee2e2'
@@ -24,6 +31,7 @@ function Monitoring() {
     eaiApi.monitoring.snapshot()
       .then(data => {
         setSnap(data)
+        // history 끝 29개 + 새 시점 = 최대 30개 유지 (5초×30 = 약 2분 30초 트레일)
         setHistory(h => [...h.slice(-29), {
           time: new Date().toLocaleTimeString('ko', { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
           lag:  data.kafkaConsumerLag ?? 0,
@@ -35,6 +43,7 @@ function Monitoring() {
       .finally(() => setLoading(false))
   }
 
+  // 5초 주기 폴링 — Dashboard(10초)보다 짧음 (실시간 모니터링 목적)
   useEffect(() => {
     load()
     const timer = setInterval(load, 5000)

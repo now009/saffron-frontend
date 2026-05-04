@@ -1,3 +1,9 @@
+// ============================================================
+// 프로그램관리 — 메뉴와 연결되는 실제 화면(URL) 마스터
+// 라우트: /portal/programs/list
+// 메뉴(menu.jsx)에서 ProgramSelectModal로 이 데이터를 참조하여 메뉴-프로그램 연결
+// programId는 신규 등록 시 자동 채번
+// ============================================================
 import { useState, useEffect, useRef } from 'react'
 import apiUri from '../../api/apiUri'
 import serverConfig from '../../config/serverConfig'
@@ -64,6 +70,7 @@ function ActionMenu({ row, onEdit, onDelete }) {
   )
 }
 
+// ─── 등록/수정 모달 — 신규 시 programId 자동 채번 후 readonly 표시 ───
 function ProgramModal({ mode, form: initialForm, onClose, onSave }) {
   const [form, setForm] = useState(initialForm)
   const isEdit = mode === 'edit'
@@ -168,6 +175,7 @@ function Pagination({ current, total, onChange }) {
   )
 }
 
+// ─── 메인 — 프로그램 목록 그리드 + 검색 + CRUD ───
 function Program() {
   const [rows, setRows]       = useState([])
   const [loading, setLoading] = useState(true)

@@ -1,13 +1,22 @@
+// ============================================================
+// DataSource 관리 — DB 어댑터가 참조하는 JDBC 연결 마스터
+// 라우트: /eai/datasources
+// 주요 기능: CRUD + Connection Test (실제 DB에 쿼리 발송하여 연결 검증)
+// 필수 검증: 기본정보 8개 + 풀설정 4개 — 저장/Connection Test 모두 동일한 validate() 통과 필요
+// ============================================================
 import { useEffect, useRef, useState } from 'react'
 import eaiApi from '../../api/eaiApi'
 import '../../eai.css'
 
+// ─── 행별 수정/삭제 드롭다운 메뉴 (그리드 마지막 컬럼) ───
+// 그리드 하단 근처에서 열릴 때 드롭다운이 잘리지 않도록 위/아래 자동 전환
 function ActionMenu({ row, onEdit, onDelete }) {
   const [open, setOpen]     = useState(false)
   const [openUp, setOpenUp] = useState(false)
   const ref    = useRef(null)
   const btnRef = useRef(null)
 
+  // 드롭다운 높이가 약 110px이므로 그리드 하단까지 여유 없으면 위쪽으로 펼침
   const toggle = () => {
     if (!open && btnRef.current) {
       const wrap      = btnRef.current.closest('.grid-wrap')
@@ -56,6 +65,24 @@ function SearchIcon() {
   )
 }
 
+// 필수 입력 필드 정의 — key는 form 키, value는 한국어 라벨(에러 메시지에 그대로 사용)
+const REQUIRED_FIELDS = {
+  datasourceId:    'DataSource ID',
+  datasourceName:  'DataSource명',
+  jdbcUrl:         'JDBC URL',
+  dbUsername:      'DB 사용자명',
+  dbPassword:      'DB 비밀번호',
+  driverClass:     'Driver Class',
+  defaultSchema:   '기본 스키마',
+  poolMinSize:     '최소 풀 크기',
+  poolMaxSize:     '최대 풀 크기',
+  poolTimeoutMs:   '연결 대기 타임아웃',
+  queryTimeoutSec: '쿼리 타임아웃',
+}
+
+const isEmpty = (v) =>
+  v === '' || v === null || v === undefined || (typeof v === 'number' && Number.isNaN(v))
+
 function Datasource() {
   const [list, setList]       = useState([])
   const [loading, setLoading] = useState(true)
@@ -63,6 +90,8 @@ function Datasource() {
   const [modal, setModal]     = useState(null)
   const [form, setForm]       = useState(defaultForm)
   const [saving, setSaving]   = useState(false)
+  const [testing, setTesting]       = useState(false)
+  const [testResult, setTestResult] = useState(null)
 
   const load = () => {
     setLoading(true)
@@ -74,11 +103,20 @@ function Datasource() {
 
   useEffect(() => { load() }, [])
 
-  const openNew  = () => { setForm(defaultForm); setModal('new') }
-  const openEdit = (item) => { setForm({ ...defaultForm, ...item }); setModal('edit') }
-  const closeModal = () => setModal(null)
+  const openNew  = () => { setForm(defaultForm); setTestResult(null); setModal('new') }
+  const openEdit = (item) => { setForm({ ...defaultForm, ...item }); setTestResult(null); setModal('edit') }
+  const closeModal = () => { setModal(null); setTestResult(null) }
+
+  const validate = () => {
+    for (const [key, label] of Object.entries(REQUIRED_FIELDS)) {
+      if (isEmpty(form[key])) return `${label} 항목은 필수입니다.`
+    }
+    return null
+  }
 
   const handleSave = async () => {
+    const err = validate()
+    if (err) { alert(err); return }
     setSaving(true)
     try {
       if (modal === 'edit') await eaiApi.datasource.update(form.id, form)
@@ -94,17 +132,38 @@ function Datasource() {
     load()
   }
 
-  const f = (key, label, type = 'text', placeholder = '') => (
+  // Connection Test — 저장 없이 현재 폼 값으로 백엔드가 실제 DB에 쿼리(SELECT 1 등) 발송.
+  // 응답 형식은 { success | ok, message } 두 형태 모두 호환되도록 처리.
+  const handleConnectionTest = async () => {
+    const err = validate()
+    if (err) { setTestResult({ ok: false, msg: err }); return }
+    setTesting(true)
+    setTestResult(null)
+    try {
+      const res = await eaiApi.datasource.test(form)
+      const ok  = res?.success === true || res?.ok === true
+      const msg = res?.message ?? (ok ? '연결 성공' : '연결 실패')
+      setTestResult({ ok, msg })
+    } catch {
+      setTestResult({ ok: false, msg: '연결 테스트 중 오류가 발생했습니다.' })
+    } finally {
+      setTesting(false)
+    }
+  }
+
+  // 텍스트/비밀번호 필드 빌더 — req=true 시 라벨에 'req' 클래스 추가(빨간 별표 자동 부착)
+  const f = (key, label, type = 'text', placeholder = '', req = false) => (
     <div className="modal-field" key={key}>
-      <label>{label}</label>
+      <label className={req ? 'req' : ''}>{label}</label>
       <input type={type} value={form[key] ?? ''} placeholder={placeholder}
         onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))} />
     </div>
   )
 
-  const fi = (key, label) => (
+  // 숫자 필드 빌더 — Number() 변환으로 form에 number 타입 보장 (풀 사이즈/타임아웃)
+  const fi = (key, label, req = false) => (
     <div className="modal-field" key={key}>
-      <label>{label}</label>
+      <label className={req ? 'req' : ''}>{label}</label>
       <input type="number" value={form[key] ?? ''} style={{ width: 100 }}
         onChange={e => setForm(f => ({ ...f, [key]: Number(e.target.value) }))} />
     </div>
@@ -169,9 +228,9 @@ function Datasource() {
                     <td>{item.datasourceId}</td>
                     <td>{item.datasourceName}</td>
                     <td>{item.dbType}</td>
-                    <td style={{ fontSize: 12, color: '#6b7280' }}>{item.jdbcUrl}</td>
+                    <td className="eai-cell-mute">{item.jdbcUrl}</td>
                     <td>{item.dbUsername}</td>
-                    <td style={{ textAlign: 'center' }}>
+                    <td className="eai-cell-center">
                       <span className={`eai-status-badge ${item.isActive ? 'ACTIVE' : 'INACTIVE'}`}>
                         {item.isActive ? 'Y' : 'N'}
                       </span>
@@ -187,59 +246,72 @@ function Datasource() {
         </div>
       </div>
 
+      {/* ─── 등록/수정 모달 — 좌: 기본정보 + Connection Test, 우: 풀설정 + 추가설정 ─── */}
       {modal && (
         <div className="modal-overlay" onClick={closeModal}>
-          <div className="modal-box" style={{ width: 880 }} onClick={e => e.stopPropagation()}>
+          <div className="modal-box" style={{ width: 920 }} onClick={e => e.stopPropagation()}>
             <div className="modal-header">
-              <span>{modal === 'edit' ? 'DataSource 수정' : 'DataSource 등록'}</span>
-              <button onClick={closeModal} style={{ background: 'none', border: 'none', fontSize: 18, cursor: 'pointer' }}>×</button>
+              <span className="modal-title">{modal === 'edit' ? 'DataSource 수정' : 'DataSource 등록'}</span>
+              <button className="modal-close" onClick={closeModal}>✕</button>
             </div>
-            <div className="modal-body" style={{ display: 'flex', flexDirection: 'row', gap: 16, alignItems: 'flex-start' }}>
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 12 }}>
-                <div className="eai-form-section">
-                  <h4>기본 정보</h4>
-                  {f('datasourceId',   'DataSource ID', 'text', 'DS_ERP')}
-                  {f('datasourceName', 'DataSource명')}
-                  <div className="modal-field">
-                    <label>DB 유형</label>
-                    <select value={form.dbType} onChange={e => setForm(f => ({ ...f, dbType: e.target.value }))}>
-                      {DB_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
-                    </select>
+            <div className="modal-body">
+              <div className="eai-modal-grid">
+                <div className="eai-modal-col">
+                  <div className="eai-form-section">
+                    <h4>기본 정보</h4>
+                    {f('datasourceId',   'DataSource ID', 'text', 'DS_ERP', true)}
+                    {f('datasourceName', 'DataSource명',  'text', '',       true)}
+                    <div className="modal-field">
+                      <label className="req">DB 유형</label>
+                      <select value={form.dbType} onChange={e => setForm(f => ({ ...f, dbType: e.target.value }))}>
+                        {DB_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                      </select>
+                    </div>
+                    {f('jdbcUrl',       'JDBC URL',     'text',     'jdbc:mariadb://host:3306/dbname', true)}
+                    {f('dbUsername',    'DB 사용자명',   'text',     '',                                true)}
+                    {f('dbPassword',    'DB 비밀번호',   'password', '',                                true)}
+                    {f('driverClass',   'Driver Class', 'text',     'org.mariadb.jdbc.Driver',         true)}
+                    {f('defaultSchema', '기본 스키마',   'text',     '',                                true)}
                   </div>
-                  {f('jdbcUrl',       'JDBC URL',     'text', 'jdbc:mariadb://host:3306/dbname')}
-                  {f('dbUsername',    'DB 사용자명')}
-                  {f('dbPassword',    'DB 비밀번호',   'password')}
-                  {f('driverClass',   'Driver Class', 'text', 'org.mariadb.jdbc.Driver')}
-                  {f('defaultSchema', '기본 스키마')}
+                  <div className="eai-test-row">
+                    <button type="button" className="eai-test-btn" onClick={handleConnectionTest} disabled={testing}>
+                      {testing ? '테스트 중...' : 'Connection Test'}
+                    </button>
+                    {testResult && (
+                      <span className={`eai-test-result ${testResult.ok ? 'ok' : 'err'}`}>
+                        {testResult.ok ? '✓' : '✕'} {testResult.msg}
+                      </span>
+                    )}
+                  </div>
                 </div>
-              </div>
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 12 }}>
-                <div className="eai-form-section">
-                  <h4>풀 설정</h4>
-                  {fi('poolMinSize',     '최소 풀 크기')}
-                  {fi('poolMaxSize',     '최대 풀 크기')}
-                  {fi('poolTimeoutMs',   '연결 대기 타임아웃(ms)')}
-                  {fi('queryTimeoutSec', '쿼리 타임아웃(초)')}
-                </div>
-                <div className="eai-form-section">
-                  <h4>추가 설정</h4>
-                  <div className="modal-field">
-                    <label>추가 JDBC 속성 (JSON)</label>
-                    <textarea rows={3} value={form.connectionProps ?? ''}
-                      onChange={e => setForm(f => ({ ...f, connectionProps: e.target.value }))} />
+                <div className="eai-modal-col">
+                  <div className="eai-form-section wide-label">
+                    <h4>풀 설정</h4>
+                    {fi('poolMinSize',     '최소 풀 크기',         true)}
+                    {fi('poolMaxSize',     '최대 풀 크기',         true)}
+                    {fi('poolTimeoutMs',   '연결 대기 타임아웃(ms)', true)}
+                    {fi('queryTimeoutSec', '쿼리 타임아웃(초)',     true)}
                   </div>
-                  <div className="modal-field">
-                    <label>설명</label>
-                    <textarea rows={2} value={form.description ?? ''}
-                      onChange={e => setForm(f => ({ ...f, description: e.target.value }))} />
-                  </div>
-                  <div className="modal-field">
-                    <label>활성화</label>
-                    <select value={form.isActive ? 'true' : 'false'}
-                      onChange={e => setForm(f => ({ ...f, isActive: e.target.value === 'true' }))}>
-                      <option value="true">활성</option>
-                      <option value="false">비활성</option>
-                    </select>
+                  <div className="eai-form-section">
+                    <h4>추가 설정</h4>
+                    <div className="modal-field modal-field-v">
+                      <label>추가 JDBC 속성 (JSON)</label>
+                      <textarea rows={3} value={form.connectionProps ?? ''}
+                        onChange={e => setForm(f => ({ ...f, connectionProps: e.target.value }))} />
+                    </div>
+                    <div className="modal-field modal-field-v">
+                      <label>설명</label>
+                      <textarea rows={2} value={form.description ?? ''}
+                        onChange={e => setForm(f => ({ ...f, description: e.target.value }))} />
+                    </div>
+                    <div className="modal-field">
+                      <label>활성화</label>
+                      <select value={form.isActive ? 'true' : 'false'}
+                        onChange={e => setForm(f => ({ ...f, isActive: e.target.value === 'true' }))}>
+                        <option value="true">활성</option>
+                        <option value="false">비활성</option>
+                      </select>
+                    </div>
                   </div>
                 </div>
               </div>

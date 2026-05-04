@@ -1,3 +1,9 @@
+// ============================================================
+// 스케줄 목록 — Cron 기반 자동 실행 스케줄 관리
+// 라우트: /eai/schedules
+// 동작: 활성/비활성 토글, 즉시 실행(run) 트리거
+// 등록·수정 폼은 별도로 없음 — 인터페이스 등록 시 자동 생성된다는 가정
+// ============================================================
 import { useEffect, useState } from 'react'
 import eaiApi from '../api/eaiApi'
 import '../eai.css'
@@ -26,6 +32,7 @@ function ScheduleList() {
       .finally(() => setRunning(null))
   }
 
+  // 행 클릭 이벤트가 토글 버튼에 전파되지 않도록 차단 (현재 행 클릭 동작은 없지만 일관성 유지)
   const handleToggle = (e, item) => {
     e.stopPropagation()
     eaiApi.schedule.toggle(item.id, !item.isActive).then(load)

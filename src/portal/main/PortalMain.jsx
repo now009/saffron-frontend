@@ -1,3 +1,8 @@
+// ============================================================
+// 포털 메인 — 라우트 테이블 + 대시보드(공지사항 위젯)
+// 라우트 prefix: /portal (관리), /eai (EAI 모듈)
+// PortalDashboard: /portal 진입 시 표시되는 환영 화면 + 최근 공지 5건
+// ============================================================
 import { useState, useEffect } from 'react'
 import { Routes, Route, useNavigate } from 'react-router-dom'
 import apiUri from '../../api/apiUri.js'
@@ -31,6 +36,7 @@ import DbAdapterConfig from '../../eai/pages/adapter/DbAdapterConfig.jsx'
 import RestConfig      from '../../eai/pages/adapter/RestConfig.jsx'
 import SoapConfig      from '../../eai/pages/adapter/SoapConfig.jsx'
 
+// 공지 유형 enum → UI 표시값/배지 색상 매핑
 const TYPE_LABEL = { NORMAL: '일반', IMPORTANT: '중요', POPUP: '팝업' }
 const TYPE_BADGE = { NORMAL: 'off', IMPORTANT: 'level1', POPUP: 'level2' }
 
@@ -39,6 +45,9 @@ function PortalDashboard() {
   const [notices, setNotices] = useState([])
   const [loading, setLoading] = useState(true)
 
+  // 공지 목록을 받아 최신 5건만 노출
+  // 백엔드 응답이 array / { list } / { content } / { data } 어느 형태로 오든 호환
+  // createdDate가 'YYYY-MM-DD HH:MM:SS' 문자열이라 'T'로 치환 후 Date 파싱
   useEffect(() => {
     fetch(apiUri.notice.list(), {
       method: 'POST',
@@ -123,6 +132,7 @@ function PortalDashboard() {
   )
 }
 
+// ─── 라우트 테이블 — 좌: portal 관리(사용자/메뉴/권한 등), 우: EAI 모듈 ───
 function PortalMain() {
   return (
     <main className="main-content">

@@ -1,3 +1,11 @@
+// ============================================================
+// 사용자관리 — 사용자 마스터 CRUD
+// 라우트: /portal/users/list
+// 모달 폼 특이사항:
+//   - 신규 등록 시 userId 중복확인(checkId) 의무
+//   - 부서 select는 모달 진입 시 부서 목록을 별도 API로 조회
+//   - 비밀번호는 신규 등록 시에만 입력, 수정 시 빈값이면 변경 안 함 (백엔드 처리)
+// ============================================================
 import { useState, useEffect, useRef } from 'react'
 import apiUri from '../../api/apiUri'
 import serverConfig from '../../config/serverConfig'
@@ -77,6 +85,7 @@ function PersonIcon() {
   )
 }
 
+// ─── 등록/수정 모달 — 부서 select는 동적 로드, 신규 등록 시 ID 중복확인 필수 ───
 function UserModal({ mode, form: initialForm, onClose, onSave }) {
   const [form, setForm] = useState(initialForm)
   const [depts, setDepts] = useState([])
@@ -96,6 +105,7 @@ function UserModal({ mode, form: initialForm, onClose, onSave }) {
 
   const set = (key, val) => setForm((prev) => ({ ...prev, [key]: val }))
 
+  // 숫자만 입력 + 최대 길이 제한 (전화번호 입력에 사용)
   const onlyDigits = (val, max) => val.replace(/\D/g, '').slice(0, max)
 
   const handleUserIdChange = (val) => {
@@ -122,6 +132,8 @@ function UserModal({ mode, form: initialForm, onClose, onSave }) {
     }
   }
 
+  // 저장 검증 — 신규 등록일 때만 ID 정책(길이/문자/중복확인) 강제
+  // 수정 시에는 password 빈값이면 변경하지 않음 (백엔드 합의)
   const handleSubmit = () => {
     if (!form.userId) { alert('사용자 ID를 입력하세요'); return }
     if (!isEdit) {
@@ -288,6 +300,7 @@ function Pagination({ current, total, onChange }) {
   )
 }
 
+// ─── 메인 — 사용자 목록 그리드 + 검색 + 등록/수정/삭제 ───
 function User() {
   const [rows, setRows]       = useState([])
   const [loading, setLoading] = useState(true)

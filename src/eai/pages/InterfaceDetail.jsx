@@ -1,3 +1,9 @@
+// ============================================================
+// 인터페이스 상세 — 단일 인터페이스의 정보·어댑터·매핑 조회 (읽기 전용)
+// 라우트: /eai/interfaces/:id
+// 탭 구조: 기본정보 | 어댑터설정 | 매핑규칙
+// 어댑터/매핑 컴포넌트는 InterfaceForm과 공용 — onChange는 빈 함수로 주입해 readonly 처리
+// ============================================================
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import StatusBadge from '../components/StatusBadge'
@@ -15,6 +21,7 @@ function InterfaceDetail() {
   const [loading, setLoading] = useState(true)
   const [tab, setTab]         = useState('info')
 
+  // 인터페이스/어댑터/매핑 3개 API 병렬 호출 — 의존관계 없으므로 직렬화 불필요
   useEffect(() => {
     Promise.all([
       eaiApi.interface.get(id),

@@ -459,3 +459,142 @@ eai_db_adapter_def table을 삭제했고, 4개의 table을 추가했어
   ├────────┼────────────────────────┼─────────────┤
   │ DELETE │ /eai/soap-configs/{id} │             │
   └────────┴────────────────────────┴─────────────┘
+
+-------------------------------------------------------------
+EAI 모듈 구조 - 2026-05-04
+-------------------------------------------------------------
+1. 전체 구조
+
+src/eai/
+├── eaiMain.jsx              랜딩 페이지(웰컴)
+├── eai.css                  모듈 전용 스타일(155줄)
+├── api/eaiApi.js            REST 호출 래퍼 (8개 도메인)
+├── components/              재사용 UI 5종
+│   ├── KpiCard.jsx          숫자 카드
+│   ├── StatusBadge.jsx      상태 색상 배지
+│   ├── MessageViewer.jsx    JSON/RAW 토글 뷰어
+│   ├── AdapterConfigForm.jsx REST/SOAP/DB/FILE 동적 폼
+│   └── MappingRuleEditor.jsx 행 단위 매핑 규칙 편집기
+└── pages/
+    ├── Dashboard.jsx        KPI + 차트(10초 폴링)
+    ├── Monitoring.jsx       실시간 지표(5초 폴링, 30개 슬라이딩 윈도우)
+    ├── InterfaceList.jsx    인터페이스 목록·필터·토글
+    ├── InterfaceForm.jsx    4단계 위저드(등록/수정 공용)
+    ├── InterfaceDetail.jsx  3탭 상세
+    ├── MessageHistory.jsx   메시지 이력 + 모달 상세 + 재처리
+    ├── ScheduleList.jsx     스케줄 목록·즉시실행·토글
+    └── adapter/             어댑터 4종 CRUD
+        ├── Datasource.jsx
+        ├── DbAdapterConfig.jsx
+        ├── RestConfig.jsx
+        └── SoapConfig.jsx
+2. 라우팅
+PortalMain.jsx:131-142 에 13개 EAI 라우트가 등록되어 있고, 별도의 /eai 부모 레이아웃 없이 평면적으로 매핑됨. EAI 진입점은 /eai(=Dashboard).
+
+3. API 계층 — eaiApi.js
+도메인별로 그룹핑된 REST 클라이언트.
+
+interface (목록/상세/생성/수정/토글/테스트)
+adapter, mapping
+message (목록/재처리)
+monitoring.snapshot()
+schedule (목록/즉시실행/토글)
+datasource, dbAdapterConfig, restConfig, soapConfig — 표준 CRUD 5종 세트
+엔드포인트 prefix가 두 종류로 나뉨에 주의:
+
+/eai/api/... — 비즈니스 로직 (interface, adapter, mapping, message, monitoring, schedule)
+/eai/... — 설정 마스터 (datasource, *-configs)
+4. 핵심 화면 분석
+Dashboard Dashboard.jsx — monitoring.snapshot() 으로 KPI 4종(처리건수/성공률/응답시간/활성수) + 시간별 LineChart + 오류 BarChart. Lag>1000, DLQ>100 시 경고 배너.
+
+Monitoring Monitoring.jsx — 같은 snapshot API를 5초 주기로 호출, 클라이언트에서 30개 시점을 슬라이딩 윈도우로 보관해 실시간 추이 차트 생성. 임계치 따라 카드 배경색이 바뀜(warn/danger props).
+
+InterfaceForm InterfaceForm.jsx — 4단계 위저드(기본정보 → 어댑터 → 매핑 → 검토/테스트). 저장 시 인터페이스/어댑터/매핑 3개 API를 순차 호출. 4단계에서 interface.test() 로 페이로드 시험전송.
+
+MessageHistory MessageHistory.jsx — 행 클릭 시 모달로 요청/응답 본문 표시, FAIL/DLQ 상태에서만 재처리 버튼 노출.
+
+Adapter CRUD 4종 — Datasource/DbAdapterConfig/RestConfig/SoapConfig 전부 동일 패턴(목록 + 필터 + 모달 폼 + ActionMenu 드롭다운). 코드 중복이 큼.
+
+5. 잘된 점
+폴링 cleanup이 정확. Dashboard·Monitoring 모두 setInterval 을 useEffect cleanup에서 해제 → 페이지 이탈 시 리소스 누수 없음.
+Array.isArray 가드. 응답이 배열/페이징 양쪽 모두 가능하다는 전제로 data.content ?? [] 폴백 처리(목록 화면 전반).
+상태별 색상이 CSS 클래스로 분리. .eai-status-badge.SUCCESS/FAIL/RETRY/DLQ/... 처럼 데이터 값과 클래스명을 동일하게 매칭 → JSX 단순화.
+위저드 UI 일관성. wizard-steps 클래스를 InterfaceForm/InterfaceDetail/AdapterConfigForm 에서 재사용.
+6. 개선 여지
+사이드바 메뉴 미연결 — PortalLeft.jsx 에 /eai 경로가 한 건도 없음. 라우트는 다 있는데 메뉴 진입 동선이 없어서 직접 URL 입력해야 접근됨.
+Adapter CRUD 4페이지 중복 — ActionMenu, SearchIcon, 모달/저장 로직이 거의 동일. 공용 <CrudGrid> 또는 hook(useCrudResource) 추출 시 ~600줄 절감 가능.
+에러 처리 빈약 — .catch(() => {}) / .catch(() => setList([])) 패턴 다수. 사용자가 실패 사실을 모름. 토스트/배너 도입 필요.
+InterfaceForm 저장 트랜잭션성 부재 — interface.update → adapter.save → mapping.save 직렬 호출에서 중간 실패 시 부분 저장 상태 발생. 백엔드 단일 엔드포인트로 묶거나 롤백 로직 필요.
+alert/window.confirm 사용 — 모달이 이미 있는 프로젝트에서 네이티브 다이얼로그를 쓰고 있어 UX 톤이 깨짐.
+스케줄 등록 화면 부재 — ScheduleList는 토글/즉시실행만 있고 등록·수정 폼이 없음(인터페이스 등록 시 자동 생성을 가정한 듯).
+Dashboard의 successRate.toFixed(1) — successRate 가 null 이면 nullish 병합으로 0 처리되지만, 백엔드가 문자열이라도 보내면 런타임 에러. 타입 가드 한 줄 추가 권장.
+번들 크기 — recharts 도입으로 main 청크가 601kB. Dashboard/Monitoring만 lazy import 하면 큰 효과.
+7. 백엔드 의존 구조 추정
+eaiApi.js 와 화면이 기대하는 응답 필드를 종합하면 백엔드는 다음 도메인을 노출해야 함:
+
+Interface(id, interfaceId, name, sourceSystem, targetSystem, adapterType, status, isActive, todayCount, lastRunAt)
+Adapter (interfaceId 기준 1:1 — REST/SOAP/DB/FILE 필드 다형)
+MappingRule (sourcePath, targetPath, transformType, transformExpr, sortOrder)
+Message (interfaceId, status, direction, processingMs, requestBody, responseBody, errorMessage)
+MonitoringSnapshot (todayCount, successRate, avgResponseMs, activeInterfaceCount, kafkaConsumerLag, currentTps, dlqCount, hourlyTrend[], errorBreakdown[])
+Schedule (cronExpression, lastRunAt, nextRunAt, lastStatus, isActive)
+
+
+├── RestConfig.jsx
+        └── SoapConfig.jsx 이 4개 페이지의 UI/UX에 대해 수정작업을 진행할거야
+Show more
+수정 방향을 듣기 전에 4개 파일을 모두 정확히 읽어두겠습니다.
+
+Read c:\00.Saffron\saffron-frontend\src\eai\pages\adapter\DbAdapterConfig.jsx (from line 81)
+Read c:\00.Saffron\saffron-frontend\src\eai\pages\adapter\RestConfig.jsx
+Read c:\00.Saffron\saffron-frontend\src\eai\pages\adapter\SoapConfig.jsx
+4개 파일 모두 다 읽었습니다. 현재 구조를 요약하면:
+
+파일	폼 필드 수	모달 폭	좌/우 섹션 구성
+Datasource	14개	880px	(기본정보) / (풀설정 + 추가설정)
+DbAdapterConfig	8개	800px	(기본정보) / (추가설정)
+RestConfig	25개	960px	(기본정보 + 인증) / (요청응답 + SSL/프록시 + 상태)
+SoapConfig	20개	960px	(WSDL + 프로토콜) / (WS-Sec + 요청응답)
+공통 패턴 (그래서 4파일 모두 동일):
+
+ActionMenu 컴포넌트, SearchIcon 함수 — 4번 복붙
+그리드 + 툴바 + 모달 레이아웃
+eai-form-section h4 박스를 좌/우 두 컬럼으로 배치
+활성화/SSL/롤백 같은 boolean 을 select(true/false)로 처리
+alert / window.confirm 사용
+
+-------------------------------------------------------
+개선방향
+
+시각 톤 정돈 — 모달 폼이 한쪽이 비어 보이는 페이지(특히 DbAdapterConfig)가 있고, 섹션 그루핑/간격이 들쭉날쭉합니다. CSS 주로 정렬·여백·폰트 통일.
+인터랙션 개선 — alert/window.confirm 제거, boolean을 토글 스위치로, 비밀번호 필드에 표시/숨기기 토글, 폼 검증 메시지 등.
+공통화 리팩토링 — ActionMenu/SearchIcon을 src/eai/components/ 로 추출. 4파일 중복 200줄 가량 감축.
+전체 레이아웃 변경 — 예: 모달 대신 우측 슬라이드 패널, 또는 별도 라우트 페이지로 이동, 또는 그리드 우측에 인라인 상세 패널.
+
+-------------------------------------------------------------
+
+    └── adapter/             어댑터 4종 CRUD
+        ├── Datasource.jsx
+        ├── DbAdapterConfig.jsx
+        ├── RestConfig.jsx
+        └── SoapConfig.jsx
+
+-- 필수체크 항목 및 UI/UX 수정사항       
+1. Datasource.jsx
+    - 기본정보, 풀설정 내용은 필수 체크
+    - 기본정보 Box 아래에 [Connection Test] 버튼생성 
+      ( 기본 스키마 )로 Query전송하여 연결여부 확인할것임
+    - 풀설정 Box 연결 대기 타임아웃 , 쿼리 타임아웃(초) -> Label과 input box 사이 간격조절 , 현재 label 오른쪽글자가 잘려서 보임
+     
+2. DbAdapterConfig.jsx
+    - 기본정보 필수 체크
+
+3. RestConfig.jsx
+    - 기본정보 , 인증설정 Box 필수 체크
+
+4. SoapConfig.jsx
+  -  WSDL / 서비스 연결  , SOAP 프로토콜 , WS-Security 인증 필수 체크
+  
+필수체크 label에 '*'로 필수항목임을 시각적으로 표현
+
+위사항에 맞춰 UI 

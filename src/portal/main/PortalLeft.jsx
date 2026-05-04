@@ -1,7 +1,13 @@
+// ============================================================
+// 좌측 사이드바 — 메뉴 트리(최대 3-depth) + 고정 링크(게시판/공지사항)
+// props: open(접힘 여부), menus(서버에서 받은 메뉴 평면 배열)
+// 동작: parentMenuId 기반으로 평면 배열을 트리로 재구성, 사용자 권한에 따라 메뉴는 이미 필터링된 상태
+// ============================================================
 import { useState, useEffect, useMemo } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import '../common/css/SaffronLeft.css'
 
+// 메뉴 펼침 인디케이터 (▼ ↔ ▶)
 function ChevronIcon({ open }) {
   return (
     <svg className={`chev ${open ? 'open' : ''}`} viewBox="0 0 24 24" fill="currentColor">
@@ -10,6 +16,7 @@ function ChevronIcon({ open }) {
   )
 }
 
+// sortOrder 우선, 동일 시 menuId 사전순 — DB sortOrder가 NULL이어도 안정 정렬 보장
 const sortFn = (a, b) =>
   (a.sortOrder ?? 0) - (b.sortOrder ?? 0) ||
   String(a.menuId ?? '').localeCompare(String(b.menuId ?? ''))
@@ -17,6 +24,7 @@ const sortFn = (a, b) =>
 function PortalLeft({ open, menus }) {
   const location = useLocation()
 
+  // 평면 배열 → 루트/자식맵으로 변환 (menus 변경 시에만 재계산)
   const { roots, childrenByParent } = useMemo(() => {
     const list = menus ?? []
     const childMap = new Map()
@@ -37,6 +45,7 @@ function PortalLeft({ open, menus }) {
 
   const [expanded, setExpanded] = useState(new Set())
 
+  // 메뉴 로드 시 모든 루트 자동 펼침 — 사용자가 첫 진입 시 전체 구조를 한눈에 보도록
   useEffect(() => {
     setExpanded(new Set(roots.map((r) => r.menuId)))
   }, [roots])
@@ -147,6 +156,7 @@ function PortalLeft({ open, menus }) {
             })
           )}
         </div>
+        {/* ─── 고정 링크 — 권한 체크 없이 모든 사용자에 노출 ─── */}
         <div className="sidebar-pinned">
           <Link
             to="/portal/boards/list"

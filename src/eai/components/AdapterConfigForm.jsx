@@ -1,3 +1,9 @@
+// ============================================================
+// AdapterConfigForm — 어댑터 유형(REST/SOAP/DB/FILE) 별 다형 설정 폼
+// 사용처: InterfaceForm 2단계, InterfaceDetail 어댑터 탭
+// 동작: adapterType prop이 주어지면 해당 유형의 필드만 렌더,
+//       비어있으면 4개 탭으로 사용자가 직접 선택할 수 있게 노출.
+// ============================================================
 import { useState } from 'react'
 
 const TABS = ['REST', 'SOAP', 'DB', 'FILE']
@@ -102,9 +108,11 @@ function FileFields({ cfg, onChange }) {
   )
 }
 
+// ─── 메인 — adapterType이 외부에서 결정되면 탭 비노출, 아니면 탭으로 선택 ───
 function AdapterConfigForm({ adapterType, config, onChange }) {
   const [tab, setTab] = useState(adapterType ?? 'REST')
 
+  // 변경 시 항상 adapterType을 함께 끼워 보냄 — 백엔드 폴리모픽 저장에 필수.
   const handleChange = (key, val) => onChange({ ...config, adapterType: tab, [key]: val })
 
   const activeTab = adapterType ?? tab

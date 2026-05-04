@@ -1,6 +1,13 @@
+// ============================================================
+// MappingRuleEditor — 인터페이스 매핑 규칙 행 단위 편집기
+// 사용처: InterfaceForm 3단계, InterfaceDetail 매핑 탭(읽기전용 onChange={()=>{}})
+// 데이터: [{ id, sourcePath, targetPath, transformType, transformExpr, sortOrder }]
+// transformType enum: COPY | FORMAT | CODE_MAP | EXPRESSION
+// ============================================================
 function MappingRuleEditor({ rules, onChange }) {
   const list = rules ?? []
 
+  // 신규 행의 임시 id로 Date.now() 사용 — 저장 시 백엔드가 실제 PK 부여.
   const add = () => onChange([...list, { id: Date.now(), sourcePath: '', targetPath: '', transformType: 'COPY', transformExpr: '', sortOrder: list.length + 1 }])
 
   const remove = (idx) => onChange(list.filter((_, i) => i !== idx))

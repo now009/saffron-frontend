@@ -1,9 +1,16 @@
+// ============================================================
+// 인터페이스 목록 — 등록된 EAI 인터페이스 그리드 + 필터
+// 라우트: /eai/interfaces
+// 동작: 상태/유형/키워드로 필터, 행 클릭 시 상세, 토글 버튼으로 활성/비활성 즉시 변경
+// 응답 형태: 백엔드가 배열 또는 페이징 객체({content:[]}) 양쪽 가능 → 가드 처리
+// ============================================================
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import StatusBadge from '../components/StatusBadge'
 import eaiApi from '../api/eaiApi'
 import '../eai.css'
 
+// 첫 항목 ''는 select의 "전체" 옵션용 — 백엔드 enum과 분리해 유지
 const ADAPTER_TYPES = ['', 'REST', 'SOAP', 'DB', 'FILE']
 const STATUS_TYPES  = ['', 'ACTIVE', 'WARNING', 'ERROR', 'INACTIVE']
 
@@ -31,6 +38,7 @@ function InterfaceList() {
 
   useEffect(() => { load() }, [])
 
+  // 행 onClick(상세 이동)이 토글 버튼에도 전파되지 않도록 stopPropagation
   const handleToggle = (e, item) => {
     e.stopPropagation()
     if (!window.confirm(`인터페이스를 ${item.isActive ? '비활성화' : '활성화'}하시겠습니까?`)) return

@@ -1,3 +1,9 @@
+// ============================================================
+// 공지사항 목록 — 권한별 접근 (관리자만 등록/수정 버튼 노출)
+// 라우트: /portal/notices/list
+// 정렬 우선순위: 고정공지 → 등록일 역순 (백엔드 정렬 기준)
+// 작성/수정/삭제 동작은 noticeView.jsx (상세/편집)
+// ============================================================
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import apiUri from '../../api/apiUri'
@@ -70,6 +76,7 @@ function Notice() {
   const [applied, setApplied]         = useState({ field: SEARCH_FIELDS[0].value, keyword: '' })
   const [currentPage, setCurrentPage] = useState(1)
 
+  // 관리자 여부 — 등록 버튼·작성자 컬럼 표시 등 권한별 UI 분기에 사용
   const isAdmin = serverConfig.token.isAdmin()
 
   const fetchData = async (field = '', keyword = '') => {
