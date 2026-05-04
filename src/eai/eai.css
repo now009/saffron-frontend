@@ -191,8 +191,9 @@
   font-weight: 600;
 }
 
-/* 필수 항목 표시: 라벨에 .req 추가하면 빨간 별표 */
-.modal-field label.req::after {
+/* 필수 항목 표시: 라벨/섹션 헤더에 .req 추가하면 빨간 별표 */
+.modal-field label.req::after,
+.eai-form-section h4.req::after {
   content: ' *';
   color: #ef4444;
   font-weight: 700;

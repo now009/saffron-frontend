@@ -1,8 +1,9 @@
 // ============================================================
-// DB 어댑터 설정 — 인터페이스가 사용할 SQL/Procedure 매핑 정보
+// DB 어댑터 설정 — 인터페이스가 사용할 SQL/Procedure 직접 입력 정보
 // 라우트: /eai/db-adapter-configs
-// 핵심 필드: interfaceId(1:1), datasourceId(DB 연결 참조), statementId(MyBatis namespace)
+// 핵심 필드: interfaceId(1:1), datasourceId(DB 연결 참조), query(실행 SQL)
 // 작업유형(QUERY/INSERT/UPDATE/DELETE/PROCEDURE) + 결과유형(LIST/SINGLE/COUNT/NONE)으로 동작 결정
+// 쿼리 검증: validateQuery API로 backend에 SQL을 전송해 문법/실행 가능 여부 확인
 // ============================================================
 import { useEffect, useRef, useState } from 'react'
 import eaiApi, { handleEaiResponse } from '../../api/eaiApi'
@@ -51,15 +52,15 @@ const OP_TYPES     = ['QUERY', 'INSERT', 'UPDATE', 'DELETE', 'PROCEDURE']
 const RESULT_TYPES = ['LIST', 'SINGLE', 'COUNT', 'NONE']
 
 const defaultForm = {
-  interfaceId: '', datasourceId: '', statementId: '', operationType: 'QUERY',
+  interfaceId: '', datasourceId: '', query: '', operationType: 'QUERY',
   resultType: 'LIST', paramMapping: '', rollbackOnError: true, isActive: true,
 }
 
-// 기본정보 박스 5개 필드 모두 필수
+// 기본정보 + 쿼리 필수
 const REQUIRED_FIELDS = {
   interfaceId:   '인터페이스ID',
   datasourceId:  'DataSource ID',
-  statementId:   'Statement ID',
+  query:         '쿼리',
   operationType: '작업 유형',
   resultType:    '결과 유형',
 }
@@ -173,9 +174,34 @@ function DbAdapterConfig() {
   const [saving, setSaving]   = useState(false)
   const [dsModal, setDsModal] = useState(false)   // DataSource 선택 서브모달 표시 여부
 
+  // 쿼리 검증 상태 (transient — form에 저장하지 않음)
+  const [validating, setValidating]         = useState(false)
+  const [validateResult, setValidateResult] = useState(null)
+
   const handleSelectDatasource = (ds) => {
     setForm(f => ({ ...f, datasourceId: ds.datasourceId }))
     setDsModal(false)
+  }
+
+  // 쿼리 문법/실행가능 여부 검증
+  // - 기본정보 + 쿼리 필수항목 통과 후 backend로 { datasourceId, query } 전송
+  // - 백엔드가 datasourceId로 DB 방언/연결을 자동 결정하므로 UI에서 dbType 선택 불필요
+  // - 결과는 alert 없이 인라인 표시
+  const handleValidateQuery = async () => {
+    const err = validate()
+    if (err) { alert(err); return }
+    setValidating(true)
+    setValidateResult(null)
+    try {
+      const res = await eaiApi.query.validate({ datasourceId: form.datasourceId, query: form.query })
+      const ok  = res?.success === true
+      const msg = res?.message ?? (ok ? '쿼리가 유효합니다.' : '쿼리 검증 실패')
+      setValidateResult({ ok, msg })
+    } catch {
+      setValidateResult({ ok: false, msg: '쿼리 검증 중 오류가 발생했습니다.' })
+    } finally {
+      setValidating(false)
+    }
   }
 
   const load = () => {
@@ -188,9 +214,9 @@ function DbAdapterConfig() {
 
   useEffect(() => { load() }, [])
 
-  const openNew  = () => { setForm(defaultForm); setModal('new') }
-  const openEdit = (item) => { setForm({ ...defaultForm, ...item }); setModal('edit') }
-  const closeModal = () => setModal(null)
+  const openNew  = () => { setForm(defaultForm); setValidateResult(null); setModal('new') }
+  const openEdit = (item) => { setForm({ ...defaultForm, ...item }); setValidateResult(null); setModal('edit') }
+  const closeModal = () => { setModal(null); setValidateResult(null) }
 
   const validate = () => {
     for (const [key, label] of Object.entries(REQUIRED_FIELDS)) {
@@ -269,7 +295,7 @@ function DbAdapterConfig() {
                 <tr>
                   <th>인터페이스ID</th>
                   <th>DataSource ID</th>
-                  <th>Statement ID</th>
+                  <th>쿼리</th>
                   <th>작업유형</th>
                   <th>결과유형</th>
                   <th>활성</th>
@@ -285,7 +311,9 @@ function DbAdapterConfig() {
                   <tr key={item.id}>
                     <td>{item.interfaceId}</td>
                     <td>{item.datasourceId}</td>
-                    <td className="eai-cell-mute">{item.statementId}</td>
+                    <td className="eai-cell-mute" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 0 }}>
+                      {item.query}
+                    </td>
                     <td>{item.operationType}</td>
                     <td>{item.resultType}</td>
                     <td className="eai-cell-center">
@@ -304,7 +332,7 @@ function DbAdapterConfig() {
         </div>
       </div>
 
-      {/* ─── 등록/수정 모달 — 좌: 기본정보, 우: 추가설정(파라미터 매핑·롤백·활성) ─── */}
+      {/* ─── 등록/수정 모달 — 좌: 기본정보 → 추가설정, 우: 쿼리 입력 + 검증 ─── */}
       {modal && (
         <div className="modal-overlay" onClick={closeModal}>
           <div className="modal-box" style={{ width: 1080 }} onClick={e => e.stopPropagation()}>
@@ -317,7 +345,7 @@ function DbAdapterConfig() {
                 <div className="eai-modal-col">
                   <div className="eai-form-section">
                     <h4>기본 정보</h4>
-                    {f('interfaceId',  '인터페이스ID',  'IF-0001',                          true)}
+                    {f('interfaceId',  '인터페이스ID',  'IF-0001', true)}
                     <div className="modal-field" key="datasourceId">
                       <label className="req">DataSource ID</label>
                       <div className="modal-input-row">
@@ -332,7 +360,6 @@ function DbAdapterConfig() {
                         </button>
                       </div>
                     </div>
-                    {f('statementId',  'Statement ID',  'com.mapper.EaiMapper.selectData', true)}
                     <div className="modal-field">
                       <label className="req">작업 유형</label>
                       <select value={form.operationType}
@@ -348,13 +375,11 @@ function DbAdapterConfig() {
                       </select>
                     </div>
                   </div>
-                </div>
-                <div className="eai-modal-col">
                   <div className="eai-form-section">
                     <h4>추가 설정</h4>
                     <div className="modal-field modal-field-v">
                       <label>파라미터 매핑 (JSON)</label>
-                      <textarea rows={6} value={form.paramMapping ?? ''}
+                      <textarea rows={4} value={form.paramMapping ?? ''}
                         onChange={e => setForm(f => ({ ...f, paramMapping: e.target.value }))} />
                     </div>
                     <div className="modal-field">
@@ -372,6 +397,30 @@ function DbAdapterConfig() {
                         <option value="true">활성</option>
                         <option value="false">비활성</option>
                       </select>
+                    </div>
+                  </div>
+                </div>
+                <div className="eai-modal-col">
+                  <div className="eai-form-section">
+                    <h4 className="req">쿼리</h4>
+                    <div className="modal-field modal-field-v">
+                      <textarea
+                        rows={18}
+                        value={form.query ?? ''}
+                        placeholder="SELECT id, name FROM ..."
+                        style={{ fontFamily: 'monospace', fontSize: '0.82rem', minHeight: 360 }}
+                        onChange={e => setForm(f => ({ ...f, query: e.target.value }))}
+                      />
+                    </div>
+                    <div className="eai-test-row">
+                      <button type="button" className="eai-test-btn" onClick={handleValidateQuery} disabled={validating}>
+                        {validating ? '검증 중...' : 'Query 검증'}
+                      </button>
+                      {validateResult && (
+                        <span className={`eai-test-result ${validateResult.ok ? 'ok' : 'err'}`}>
+                          {validateResult.ok ? '✓' : '✕'} {validateResult.msg}
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>

@@ -87,13 +87,18 @@ const eaiApi = {
     delete: (id)          => fetch(`${base}/eai/datasources/${id}`, { method: 'DELETE', headers: h() }).then(r => r.json()),
     test:   (data)        => fetch(`${base}/eai/datasources/test`, { method: 'POST', headers: h(), body: JSON.stringify(data) }).then(r => r.json()),
   },
-  // ─── DB 어댑터 상세 설정 (datasourceId 참조 + statementId/operationType) ───
+  // ─── DB 어댑터 상세 설정 (datasourceId 참조 + query/operationType) ───
   dbAdapterConfig: {
     list:   (params = {}) => getJson(`${base}/eai/db-adapter-configs?${qs(params)}`),
     get:    (id)          => getJson(`${base}/eai/db-adapter-configs/${id}`),
     create: (data)        => fetch(`${base}/eai/db-adapter-configs`, { method: 'POST', headers: h(), body: JSON.stringify(data) }).then(r => r.json()),
     update: (id, data)    => fetch(`${base}/eai/db-adapter-configs/${id}`, { method: 'PUT', headers: h(), body: JSON.stringify(data) }).then(r => r.json()),
     delete: (id)          => fetch(`${base}/eai/db-adapter-configs/${id}`, { method: 'DELETE', headers: h() }).then(r => r.json()),
+  },
+  // ─── 공용 쿼리 검증 (datasourceId로 DB 방언/연결 정보 자동 결정) ───
+  // validate: { datasourceId, query } 전송, 응답 { success, message } envelope
+  query: {
+    validate: (data) => fetch(`${base}/eai/query/validate`, { method: 'POST', headers: h(), body: JSON.stringify(data) }).then(r => r.json()),
   },
   // ─── REST 어댑터 상세 설정 (인증·SSL·프록시 포함) ───
   restConfig: {
