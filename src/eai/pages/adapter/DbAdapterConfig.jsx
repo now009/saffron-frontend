@@ -5,48 +5,10 @@
 // 작업유형(QUERY/INSERT/UPDATE/DELETE/PROCEDURE) + 결과유형(LIST/SINGLE/COUNT/NONE)으로 동작 결정
 // 쿼리 검증: validateQuery API로 backend에 SQL을 전송해 문법/실행 가능 여부 확인
 // ============================================================
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import eaiApi, { handleEaiResponse } from '../../api/eaiApi'
 import '../../eai.css'
-
-// 행별 수정/삭제 메뉴 — 4개 어댑터 페이지 공통 패턴 (현재는 각 파일에 중복 정의)
-function ActionMenu({ row, onEdit, onDelete }) {
-  const [open, setOpen]     = useState(false)
-  const [openUp, setOpenUp] = useState(false)
-  const ref    = useRef(null)
-  const btnRef = useRef(null)
-
-  const toggle = () => {
-    if (!open && btnRef.current) {
-      const wrap      = btnRef.current.closest('.grid-wrap')
-      const bottom    = wrap ? wrap.getBoundingClientRect().bottom : window.innerHeight
-      const btnBottom = btnRef.current.getBoundingClientRect().bottom
-      setOpenUp(bottom - btnBottom < 110)
-    }
-    setOpen(v => !v)
-  }
-
-  useEffect(() => {
-    if (!open) return
-    const close = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false) }
-    document.addEventListener('mousedown', close)
-    return () => document.removeEventListener('mousedown', close)
-  }, [open])
-
-  return (
-    <div className="action-menu" ref={ref}>
-      <button ref={btnRef} className="action-btn" onClick={e => { e.stopPropagation(); toggle() }}>
-        <svg viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
-      </button>
-      {open && (
-        <div className={`action-dropdown ${openUp ? 'up' : ''}`}>
-          <button className="action-item edit"   onClick={() => { onEdit(row);   setOpen(false) }}>수정</button>
-          <button className="action-item delete" onClick={() => { onDelete(row); setOpen(false) }}>삭제</button>
-        </div>
-      )}
-    </div>
-  )
-}
+import ActionMenu from '../../../portal/common/ActionMenu'
 
 const OP_TYPES     = ['QUERY', 'INSERT', 'UPDATE', 'DELETE', 'PROCEDURE']
 const RESULT_TYPES = ['LIST', 'SINGLE', 'COUNT', 'NONE']

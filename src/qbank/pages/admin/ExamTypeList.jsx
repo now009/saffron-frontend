@@ -2,47 +2,11 @@
 // 시험종류 + 시험대상 관리 — 2패널 나란히 CRUD
 // 라우트: /admin/qbank/types
 // ============================================================
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import qbankApi, { handleQbankResponse } from '../../api/qbankApi'
 import '../../../portal/common/css/grid.css'
 import '../../qbank.css'
-
-function ActionMenu({ row, onEdit, onDelete }) {
-  const [open, setOpen]     = useState(false)
-  const [openUp, setOpenUp] = useState(false)
-  const ref    = useRef(null)
-  const btnRef = useRef(null)
-
-  const toggle = () => {
-    if (!open && btnRef.current) {
-      const wrap   = btnRef.current.closest('.grid-wrap')
-      const bottom = wrap ? wrap.getBoundingClientRect().bottom : window.innerHeight
-      setOpenUp(bottom - btnRef.current.getBoundingClientRect().bottom < 110)
-    }
-    setOpen(v => !v)
-  }
-
-  useEffect(() => {
-    if (!open) return
-    const close = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false) }
-    document.addEventListener('mousedown', close)
-    return () => document.removeEventListener('mousedown', close)
-  }, [open])
-
-  return (
-    <div className="action-menu" ref={ref}>
-      <button ref={btnRef} className="action-btn" onClick={e => { e.stopPropagation(); toggle() }}>
-        <svg viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
-      </button>
-      {open && (
-        <div className={`action-dropdown ${openUp ? 'up' : ''}`}>
-          <button className="action-item edit"   onClick={() => { onEdit(row);   setOpen(false) }}>수정</button>
-          <button className="action-item delete" onClick={() => { onDelete(row); setOpen(false) }}>삭제</button>
-        </div>
-      )}
-    </div>
-  )
-}
+import ActionMenu from '../../../portal/common/ActionMenu'
 
 // ─── 범용 인라인 CRUD 패널 (시험종류 / 시험대상 공용) ───
 function CrudPanel({ title, list, loading, fields, onSave, onDelete }) {

@@ -4,48 +4,10 @@
 // 보안 유형: NONE / USERNAME_TOKEN / X509 / SAML — 선택값에 따라 추가 필드 조건부 노출
 // 필수 검증: WSDL/서비스 6개 + SOAP 프로토콜 3개 + 보안유형별 동적 필수
 // ============================================================
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import eaiApi, { handleEaiResponse } from '../../api/eaiApi'
 import '../../eai.css'
-
-// 4개 어댑터 페이지 공통 ActionMenu — 향후 components/로 추출 후보
-function ActionMenu({ row, onEdit, onDelete }) {
-  const [open, setOpen]     = useState(false)
-  const [openUp, setOpenUp] = useState(false)
-  const ref    = useRef(null)
-  const btnRef = useRef(null)
-
-  const toggle = () => {
-    if (!open && btnRef.current) {
-      const wrap      = btnRef.current.closest('.grid-wrap')
-      const bottom    = wrap ? wrap.getBoundingClientRect().bottom : window.innerHeight
-      const btnBottom = btnRef.current.getBoundingClientRect().bottom
-      setOpenUp(bottom - btnBottom < 110)
-    }
-    setOpen(v => !v)
-  }
-
-  useEffect(() => {
-    if (!open) return
-    const close = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false) }
-    document.addEventListener('mousedown', close)
-    return () => document.removeEventListener('mousedown', close)
-  }, [open])
-
-  return (
-    <div className="action-menu" ref={ref}>
-      <button ref={btnRef} className="action-btn" onClick={e => { e.stopPropagation(); toggle() }}>
-        <svg viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
-      </button>
-      {open && (
-        <div className={`action-dropdown ${openUp ? 'up' : ''}`}>
-          <button className="action-item edit"   onClick={() => { onEdit(row);   setOpen(false) }}>수정</button>
-          <button className="action-item delete" onClick={() => { onDelete(row); setOpen(false) }}>삭제</button>
-        </div>
-      )}
-    </div>
-  )
-}
+import ActionMenu from '../../../portal/common/ActionMenu'
 
 const WS_SEC_TYPES = ['NONE', 'USERNAME_TOKEN', 'X509', 'SAML']
 

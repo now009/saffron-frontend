@@ -6,12 +6,13 @@
 //   - menuDirYn='N'(리프)은 ProgramSelectModal로 프로그램과 연결
 // 사이트(SITE_ID)는 URL pathname으로 판단 — TOP_MENUS 기반 라우트별 사이트 분리
 // ============================================================
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import apiUri from '../../api/apiUri'
 import serverConfig from '../../config/serverConfig'
 import { TOP_MENUS, getCurrentSite } from '../main/menuConfig.js'
 import '../common/css/grid.css'
+import ActionMenu from '../common/ActionMenu'
 
 const PAGE_SIZE = 10
 
@@ -48,46 +49,6 @@ function CellValue({ colKey, value }) {
     return <span className={`grid-badge ${value === 'Y' ? 'on' : 'off'}`}>{value ?? '-'}</span>
   }
   return <>{value ?? '-'}</>
-}
-
-function ActionMenu({ row, onEdit, onDelete, canDelete = true }) {
-  const [open, setOpen]     = useState(false)
-  const [openUp, setOpenUp] = useState(false)
-  const ref    = useRef(null)
-  const btnRef = useRef(null)
-
-  const toggle = () => {
-    if (!open && btnRef.current) {
-      const wrap = btnRef.current.closest('.grid-wrap')
-      const bottom    = wrap ? wrap.getBoundingClientRect().bottom : window.innerHeight
-      const btnBottom = btnRef.current.getBoundingClientRect().bottom
-      setOpenUp(bottom - btnBottom < 110)
-    }
-    setOpen((v) => !v)
-  }
-
-  useEffect(() => {
-    if (!open) return
-    const close = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false) }
-    document.addEventListener('mousedown', close)
-    return () => document.removeEventListener('mousedown', close)
-  }, [open])
-
-  return (
-    <div className="action-menu" ref={ref}>
-      <button ref={btnRef} className="action-btn" onClick={toggle}>
-        <svg viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
-      </button>
-      {open && (
-        <div className={`action-dropdown ${openUp ? 'up' : ''}`}>
-          <button className="action-item edit" onClick={() => { onEdit(row); setOpen(false) }}>수정</button>
-          {canDelete && (
-            <button className="action-item delete" onClick={() => { onDelete(row); setOpen(false) }}>삭제</button>
-          )}
-        </div>
-      )}
-    </div>
-  )
 }
 
 // ─── 프로그램 선택 서브모달 — 메뉴 등록/수정 시 프로그램 ID 검색 후 선택 ───

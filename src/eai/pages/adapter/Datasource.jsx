@@ -4,50 +4,10 @@
 // 주요 기능: CRUD + Connection Test (실제 DB에 쿼리 발송하여 연결 검증)
 // 필수 검증: 기본정보 8개 + 풀설정 4개 — 저장/Connection Test 모두 동일한 validate() 통과 필요
 // ============================================================
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import eaiApi, { handleEaiResponse } from '../../api/eaiApi'
 import '../../eai.css'
-
-// ─── 행별 수정/삭제 드롭다운 메뉴 (그리드 마지막 컬럼) ───
-// 그리드 하단 근처에서 열릴 때 드롭다운이 잘리지 않도록 위/아래 자동 전환
-function ActionMenu({ row, onEdit, onDelete }) {
-  const [open, setOpen]     = useState(false)
-  const [openUp, setOpenUp] = useState(false)
-  const ref    = useRef(null)
-  const btnRef = useRef(null)
-
-  // 드롭다운 높이가 약 110px이므로 그리드 하단까지 여유 없으면 위쪽으로 펼침
-  const toggle = () => {
-    if (!open && btnRef.current) {
-      const wrap      = btnRef.current.closest('.grid-wrap')
-      const bottom    = wrap ? wrap.getBoundingClientRect().bottom : window.innerHeight
-      const btnBottom = btnRef.current.getBoundingClientRect().bottom
-      setOpenUp(bottom - btnBottom < 110)
-    }
-    setOpen(v => !v)
-  }
-
-  useEffect(() => {
-    if (!open) return
-    const close = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false) }
-    document.addEventListener('mousedown', close)
-    return () => document.removeEventListener('mousedown', close)
-  }, [open])
-
-  return (
-    <div className="action-menu" ref={ref}>
-      <button ref={btnRef} className="action-btn" onClick={e => { e.stopPropagation(); toggle() }}>
-        <svg viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
-      </button>
-      {open && (
-        <div className={`action-dropdown ${openUp ? 'up' : ''}`}>
-          <button className="action-item edit"   onClick={() => { onEdit(row);   setOpen(false) }}>수정</button>
-          <button className="action-item delete" onClick={() => { onDelete(row); setOpen(false) }}>삭제</button>
-        </div>
-      )}
-    </div>
-  )
-}
+import ActionMenu from '../../../portal/common/ActionMenu'
 
 const DB_TYPES = ['POSTGRESQL', 'ORACLE', 'MSSQL', 'MYSQL', 'MARIADB', 'H2']
 

@@ -6,10 +6,11 @@
 //   - 부서 select는 모달 진입 시 부서 목록을 별도 API로 조회
 //   - 비밀번호는 신규 등록 시에만 입력, 수정 시 빈값이면 변경 안 함 (백엔드 처리)
 // ============================================================
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import apiUri from '../../api/apiUri'
 import serverConfig from '../../config/serverConfig'
 import '../common/css/grid.css'
+import ActionMenu from '../common/ActionMenu'
 
 const PAGE_SIZE = 10
 
@@ -37,44 +38,6 @@ function CellValue({ colKey, value }) {
     return <span className={`grid-badge ${value === 'Y' ? 'on' : 'off'}`}>{value ?? '-'}</span>
   }
   return <>{value ?? '-'}</>
-}
-
-function ActionMenu({ row, onEdit, onDelete }) {
-  const [open, setOpen]     = useState(false)
-  const [openUp, setOpenUp] = useState(false)
-  const ref    = useRef(null)
-  const btnRef = useRef(null)
-
-  const toggle = () => {
-    if (!open && btnRef.current) {
-      const wrap = btnRef.current.closest('.grid-wrap')
-      const bottom    = wrap ? wrap.getBoundingClientRect().bottom : window.innerHeight
-      const btnBottom = btnRef.current.getBoundingClientRect().bottom
-      setOpenUp(bottom - btnBottom < 110)
-    }
-    setOpen((v) => !v)
-  }
-
-  useEffect(() => {
-    if (!open) return
-    const close = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false) }
-    document.addEventListener('mousedown', close)
-    return () => document.removeEventListener('mousedown', close)
-  }, [open])
-
-  return (
-    <div className="action-menu" ref={ref}>
-      <button ref={btnRef} className="action-btn" onClick={toggle}>
-        <svg viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
-      </button>
-      {open && (
-        <div className={`action-dropdown ${openUp ? 'up' : ''}`}>
-          <button className="action-item edit" onClick={() => { onEdit(row); setOpen(false) }}>수정</button>
-          <button className="action-item delete" onClick={() => { onDelete(row); setOpen(false) }}>삭제</button>
-        </div>
-      )}
-    </div>
-  )
 }
 
 function PersonIcon() {

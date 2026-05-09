@@ -3,11 +3,12 @@
 // 라우트: /admin/qbank/papers/:paperId/questions
 // 보기 저장 전략: 문항 저장 후 → 삭제 목록 DELETE → 변경된 기존 보기 PUT → 신규 보기 POST
 // ============================================================
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import qbankApi, { handleQbankResponse } from '../../api/qbankApi'
 import '../../../portal/common/css/grid.css'
 import '../../qbank.css'
+import ActionMenu from '../../../portal/common/ActionMenu'
 
 const Q_TYPES = [
   { value: 'single',     label: '단일선택 (라디오)' },
@@ -16,43 +17,6 @@ const Q_TYPES = [
 ]
 
 const TYPE_LABEL = { single: '단일', multi: '다중', subjective: '주관식' }
-
-function ActionMenu({ row, onEdit, onDelete }) {
-  const [open, setOpen]     = useState(false)
-  const [openUp, setOpenUp] = useState(false)
-  const ref    = useRef(null)
-  const btnRef = useRef(null)
-
-  const toggle = () => {
-    if (!open && btnRef.current) {
-      const wrap   = btnRef.current.closest('.grid-wrap')
-      const bottom = wrap ? wrap.getBoundingClientRect().bottom : window.innerHeight
-      setOpenUp(bottom - btnRef.current.getBoundingClientRect().bottom < 110)
-    }
-    setOpen(v => !v)
-  }
-
-  useEffect(() => {
-    if (!open) return
-    const close = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false) }
-    document.addEventListener('mousedown', close)
-    return () => document.removeEventListener('mousedown', close)
-  }, [open])
-
-  return (
-    <div className="action-menu" ref={ref}>
-      <button ref={btnRef} className="action-btn" onClick={e => { e.stopPropagation(); toggle() }}>
-        <svg viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
-      </button>
-      {open && (
-        <div className={`action-dropdown ${openUp ? 'up' : ''}`}>
-          <button className="action-item edit"   onClick={() => { onEdit(row);   setOpen(false) }}>수정</button>
-          <button className="action-item delete" onClick={() => { onDelete(row); setOpen(false) }}>삭제</button>
-        </div>
-      )}
-    </div>
-  )
-}
 
 // 파일 선택 → base64 DataURL 변환 (이미지 미리보기용)
 const readFileAsDataUrl = (file) =>

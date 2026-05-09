@@ -336,22 +336,13 @@ table.grid-table {
 }
 
 .action-dropdown {
-  position: absolute;
-  right: 0;
-  top: calc(100% + 4px);
-  z-index: 200;
+  z-index: 9999;
   background: #ffffff;
   border: 1px solid #e2e6ea;
   border-radius: 8px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
   overflow: hidden;
   min-width: 90px;
-}
-
-.action-dropdown.up {
-  top: auto;
-  bottom: calc(100% + 4px);
-  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.12);
 }
 
 .action-item {
