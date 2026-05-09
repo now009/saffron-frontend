@@ -1,15 +1,17 @@
 import { useState, useEffect } from 'react'
-import { HashRouter, useLocation } from 'react-router-dom'
+import { HashRouter, Route, Routes, useLocation } from 'react-router-dom'
 import './Main.css'
 import apiUri from '../api/apiUri.js'
 import serverConfig from '../config/serverConfig.js'
-import { getCurrentSite } from '../portal/main/menuConfig.js'
+import { getCurrentSite, isExamPath } from '../portal/main/menuConfig.js'
 import SaffronTop from '../SaffronTop.jsx'
 import SaffronBody from '../SaffronBody.jsx'
 import PortalLeft from '../portal/main/PortalLeft.jsx'
 import PortalMain from '../portal/main/PortalMain.jsx'
+import ExamEntry from '../qbank/pages/exam/ExamEntry.jsx'
+import ExamRoom  from '../qbank/pages/exam/ExamRoom.jsx'
 
-function Layout({ sidebarOpen, onToggleSidebar }) {
+function PortalLayout({ sidebarOpen, onToggleSidebar }) {
   const location = useLocation()
   const isPortalView = location.pathname !== '/'
   const site = getCurrentSite(location.pathname)
@@ -43,6 +45,22 @@ function Layout({ sidebarOpen, onToggleSidebar }) {
       )}
     </div>
   )
+}
+
+function Layout({ sidebarOpen, onToggleSidebar }) {
+  const location = useLocation()
+  const isExam   = isExamPath(location.pathname)
+
+  if (isExam) {
+    return (
+      <Routes>
+        <Route path="/exam"                 element={<ExamEntry />} />
+        <Route path="/exam/room/:sessionId" element={<ExamRoom />} />
+      </Routes>
+    )
+  }
+
+  return <PortalLayout sidebarOpen={sidebarOpen} onToggleSidebar={onToggleSidebar} />
 }
 
 function Main() {

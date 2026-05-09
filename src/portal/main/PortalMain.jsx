@@ -24,6 +24,11 @@ import Board from '../board/board.jsx'
 import Post from '../board/post.jsx'
 import PostView from '../board/postView.jsx'
 import PostEdit from '../board/postEdit.jsx'
+import QbankDashboard from '../../qbank/pages/admin/QbankDashboard.jsx'
+import ExamTypeList   from '../../qbank/pages/admin/ExamTypeList.jsx'
+import PaperList      from '../../qbank/pages/admin/PaperList.jsx'
+import QuestionEditor from '../../qbank/pages/admin/QuestionEditor.jsx'
+import GradeList      from '../../qbank/pages/admin/GradeList.jsx'
 import EaiDashboard    from '../../eai/pages/Dashboard.jsx'
 import InterfaceList   from '../../eai/pages/InterfaceList.jsx'
 import InterfaceDetail from '../../eai/pages/InterfaceDetail.jsx'
@@ -132,7 +137,7 @@ function PortalDashboard() {
   )
 }
 
-// ─── 라우트 테이블 — 좌: portal 관리(사용자/메뉴/권한 등), 우: EAI 모듈 ───
+// ─── 라우트 테이블 — portal 관리 / EAI 모듈 / QBANK 관리자 ───
 function PortalMain() {
   return (
     <main className="main-content">
@@ -167,6 +172,12 @@ function PortalMain() {
         <Route path="/portal/boards/:boardId/write"          element={<PostEdit />} />
         <Route path="/portal/boards/:boardId/write/:postId"  element={<PostEdit />} />
         <Route path="/portal/boards/:boardId/:postId"        element={<PostView />} />
+        {/* ─── QBANK 관리자 라우트 ─── */}
+        <Route path="/admin/qbank"                           element={<QbankDashboard />} />
+        <Route path="/admin/qbank/papers"                    element={<PaperList />} />
+        <Route path="/admin/qbank/types"                     element={<ExamTypeList />} />
+        <Route path="/admin/qbank/papers/:paperId/questions" element={<QuestionEditor />} />
+        <Route path="/admin/qbank/sessions"                  element={<GradeList />} />
       </Routes>
     </main>
   )
