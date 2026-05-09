@@ -141,7 +141,7 @@ function Post() {
             <div className="board-desc">{board.description}</div>
           )}
 
-          <div className="grid-wrap" style={{ minHeight: '400px' }}>
+          <div className="grid-wrap">
             <table className="grid-table">
               <colgroup>
                 <col style={{ width: '60px'  }} />

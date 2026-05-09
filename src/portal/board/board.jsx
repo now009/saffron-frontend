@@ -293,7 +293,7 @@ function Board() {
             </div>
           </div>
 
-          <div className="grid-wrap" style={{ minHeight: '300px' }}>
+          <div className="grid-wrap">
             <table className="grid-table">
               <colgroup>
                 <col style={{ width: '110px' }} />

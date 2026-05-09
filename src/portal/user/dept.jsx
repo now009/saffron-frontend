@@ -398,7 +398,7 @@ function Dept() {
             </div>
           </div>
 
-          <div className="grid-wrap" style={{ minHeight: '453px' }}>
+          <div className="grid-wrap">
             <table className="grid-table">
               <colgroup>
                 {COLUMNS.map((col) => <col key={col.key} style={{ width: col.width }} />)}
