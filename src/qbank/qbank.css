@@ -139,6 +139,12 @@
   cursor: pointer;
   color: #374151;
 }
+/* .modal-field label(0,1,1)보다 높은 명시도(0,2,0)로 width 오버라이드 */
+.qbank-img-upload-wrap .qbank-img-upload-label {
+  width: auto;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
 .qbank-img-upload-label:hover { background: #eef2ff; border-color: #a5b4fc; color: #4f7ef8; }
 .qbank-img-upload-label input[type="file"] { display: none; }
 
