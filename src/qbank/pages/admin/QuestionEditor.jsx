@@ -1,4 +1,4 @@
-// ============================================================
+﻿// ============================================================
 // 문항 편집 — 시험지별 문항 CRUD + 보기 동적 추가/삭제 + 이미지 업로드
 // 라우트: /admin/qbank/papers/:paperId/questions
 // 보기 저장 전략: 문항 저장 후 → 삭제 목록 DELETE → 변경된 기존 보기 PUT → 신규 보기 POST
@@ -10,6 +10,9 @@ import '../../../portal/common/css/grid.css'
 import '../../qbank.css'
 import ActionMenu from '../../../portal/common/ActionMenu'
 
+// base64 미리보기(업로드 직후)와 서버 URL(/qbank-images/...) 모두 그대로 사용
+const imgSrc = (url) => url || null
+
 const Q_TYPES = [
   { value: 'single',     label: '단일선택 (라디오)' },
   { value: 'multi',      label: '다중선택 (체크박스)' },
@@ -18,29 +21,38 @@ const Q_TYPES = [
 
 const TYPE_LABEL = { single: '단일', multi: '다중', subjective: '주관식' }
 
-// 파일 선택 → base64 DataURL 변환 (이미지 미리보기용)
-const readFileAsDataUrl = (file) =>
-  new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onload  = (e) => resolve(e.target.result)
-    reader.onerror = reject
-    reader.readAsDataURL(file)
-  })
+const defaultQuestion = { qType: 'single', questionText: '', imageUrl: '', imageFileName: '', score: 1 }
+const newChoice = (seq) => ({ _key: Date.now() + seq, id: null, seq, choiceText: '', imageUrl: '', imageFileName: '', isCorrect: false })
 
-const defaultQuestion = { qType: 'single', questionText: '', imageUrl: '', score: 1 }
-const newChoice = (seq) => ({ _key: Date.now() + seq, id: null, seq, choiceText: '', imageUrl: '', isCorrect: false })
+function ImagePreviewModal({ src, name, onClose }) {
+  return (
+    <div className="modal-overlay" style={{ zIndex: 10000 }} onClick={onClose}>
+      <div className="modal-box" style={{ width: 'auto', maxWidth: '90vw', maxHeight: '90vh' }} onClick={e => e.stopPropagation()}>
+        <div className="modal-header">
+          <span className="modal-title">{name || '이미지 미리보기'}</span>
+          <button className="modal-close" onClick={onClose}>✕</button>
+        </div>
+        <div className="modal-body" style={{ textAlign: 'center', padding: 16 }}>
+          <img src={src} alt={name} style={{ maxWidth: '100%', maxHeight: '75vh', objectFit: 'contain' }} />
+        </div>
+      </div>
+    </div>
+  )
+}
 
 function QuestionModal({ paperId, question, onClose, onSaved }) {
   const isEdit = !!question?.id
+  const [previewImg, setPreviewImg] = useState(null)
 
   const [form, setForm] = useState(
     isEdit
-      ? { qType: question.qType, questionText: question.questionText, imageUrl: question.imageUrl ?? '', score: question.score }
+      ? { qType: question.qType ?? question.qtype ?? 'single', questionText: question.questionText, imageUrl: question.imageUrl ?? '', imageFileName: question.imageFileName ?? '', score: question.score }
       : { ...defaultQuestion }
   )
   const [choices, setChoices]         = useState(isEdit ? question.choices?.map(c => ({ ...c, _key: c.id })) ?? [] : [newChoice(1), newChoice(2)])
   const [deletedIds, setDeletedIds]   = useState([])
   const [saving, setSaving]           = useState(false)
+  const [uploadingKey, setUploadingKey] = useState(null) // 'question' | choice._key | null
 
   const hasChoices = form.qType !== 'subjective'
 
@@ -59,20 +71,32 @@ function QuestionModal({ paperId, question, onClose, onSaved }) {
     setChoices(prev => prev.map(c => c._key === key ? { ...c, [field]: value } : c))
   }
 
+  const uploadImage = async (file) => {
+    const fd = new FormData()
+    fd.append('file', file)
+    const res = await qbankApi.image.upload(fd)
+    const data = res?.data ?? res
+    return { imageUrl: data.imageUrl, imageFileName: data.imageFileName }
+  }
+
   const handleChoiceImgChange = async (key, file) => {
     if (!file) return
+    setUploadingKey(key)
     try {
-      const dataUrl = await readFileAsDataUrl(file)
-      updateChoice(key, 'imageUrl', dataUrl)
-    } catch { alert('이미지 로드 중 오류가 발생했습니다.') }
+      const { imageUrl, imageFileName } = await uploadImage(file)
+      setChoices(prev => prev.map(c => c._key === key ? { ...c, imageUrl, imageFileName } : c))
+    } catch { alert('이미지 업로드 중 오류가 발생했습니다.') }
+    finally { setUploadingKey(null) }
   }
 
   const handleQuestionImgChange = async (file) => {
     if (!file) return
+    setUploadingKey('question')
     try {
-      const dataUrl = await readFileAsDataUrl(file)
-      setForm(f => ({ ...f, imageUrl: dataUrl }))
-    } catch { alert('이미지 로드 중 오류가 발생했습니다.') }
+      const { imageUrl, imageFileName } = await uploadImage(file)
+      setForm(f => ({ ...f, imageUrl, imageFileName }))
+    } catch { alert('이미지 업로드 중 오류가 발생했습니다.') }
+    finally { setUploadingKey(null) }
   }
 
   const handleSave = async () => {
@@ -86,22 +110,27 @@ function QuestionModal({ paperId, question, onClose, onSaved }) {
     setSaving(true)
     try {
       // 1. 문항 저장
+      const payload = { qType: form.qType, questionText: form.questionText, score: form.score, imageFileName: form.imageFileName || null }
       const qRes = isEdit
-        ? await qbankApi.question.update(question.id, form)
-        : await qbankApi.question.create(paperId, { ...form, seq: 0 })
+        ? await qbankApi.question.update(question.id, payload)
+        : await qbankApi.question.create(paperId, { ...payload, seq: 0 })
       if (!handleQbankResponse(qRes)) return
-      const questionId = isEdit ? question.id : (qRes?.data?.id ?? qRes?.id)
+      const d = qRes?.data
+      const questionId = isEdit
+        ? question.id
+        : (typeof d === 'number' ? d : (d?.id ?? d?.questionId)) ?? qRes?.id ?? qRes?.questionId
+      if (!questionId) { alert('문항 저장 후 ID를 받지 못했습니다. 백엔드 응답을 확인해주세요.'); return }
 
       if (hasChoices) {
         // 2. 삭제된 보기 DELETE
         await Promise.all(deletedIds.map(id => qbankApi.choice.delete(id)))
         // 3. 변경된 기존 보기 PUT
         const existingChoices = choices.filter(c => c.id)
-        await Promise.all(existingChoices.map(c => qbankApi.choice.update(c.id, { seq: c.seq, choiceText: c.choiceText, imageUrl: c.imageUrl || null, isCorrect: c.isCorrect })))
+        await Promise.all(existingChoices.map(c => qbankApi.choice.update(c.id, { seq: c.seq, choiceText: c.choiceText, imageFileName: c.imageFileName || null, isCorrect: c.isCorrect })))
         // 4. 신규 보기 POST
         const newChoices = choices.filter(c => !c.id)
         for (const c of newChoices) {
-          await qbankApi.choice.create(questionId, { seq: c.seq, choiceText: c.choiceText, imageUrl: c.imageUrl || null, isCorrect: c.isCorrect })
+          await qbankApi.choice.create(questionId, { seq: c.seq, choiceText: c.choiceText, imageFileName: c.imageFileName || null, isCorrect: c.isCorrect })
         }
       }
 
@@ -111,6 +140,7 @@ function QuestionModal({ paperId, question, onClose, onSaved }) {
   }
 
   return (
+    <>
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-box" style={{ width: 900 }} onClick={e => e.stopPropagation()}>
         <div className="modal-header">
@@ -144,15 +174,19 @@ function QuestionModal({ paperId, question, onClose, onSaved }) {
                 <div className="modal-field">
                   <label>문제 이미지</label>
                   <div className="qbank-img-upload-wrap">
-                    <label className="qbank-img-upload-label">
-                      📎 파일 선택
-                      <input type="file" accept="image/*"
+                    <label className="qbank-img-upload-label" style={uploadingKey === 'question' ? { opacity: 0.6, pointerEvents: 'none' } : {}}>
+                      {uploadingKey === 'question' ? '업로드 중...' : '📎 파일 선택'}
+                      <input type="file" accept="image/*" disabled={uploadingKey === 'question'}
                         onChange={e => handleQuestionImgChange(e.target.files[0])} />
                     </label>
-                    {form.imageUrl && <img src={form.imageUrl} className="qbank-img-preview" alt="미리보기" />}
+                    {form.imageUrl && (
+                      <span className="qbank-img-filename" onClick={() => setPreviewImg({ src: form.imageUrl, name: form.imageFileName })}>
+                        {form.imageFileName || '이미지 보기'}
+                      </span>
+                    )}
                     {form.imageUrl && (
                       <button type="button" className="qbank-choice-del" title="이미지 제거"
-                        onClick={() => setForm(f => ({ ...f, imageUrl: '' }))}>✕</button>
+                        onClick={() => setForm(f => ({ ...f, imageUrl: '', imageFileName: '' }))}>✕</button>
                     )}
                   </div>
                 </div>
@@ -181,9 +215,10 @@ function QuestionModal({ paperId, question, onClose, onSaved }) {
                             placeholder="보기 텍스트"
                             onChange={e => updateChoice(c._key, 'choiceText', e.target.value)}
                           />
-                          <label className="qbank-img-upload-label" title="이미지 업로드">
-                            📎
-                            <input type="file" accept="image/*"
+                          <label className="qbank-img-upload-label" title="이미지 업로드"
+                            style={uploadingKey === c._key ? { opacity: 0.6, pointerEvents: 'none' } : {}}>
+                            {uploadingKey === c._key ? '⏳' : '📎'}
+                            <input type="file" accept="image/*" disabled={uploadingKey === c._key}
                               onChange={e => handleChoiceImgChange(c._key, e.target.files[0])} />
                           </label>
                           <label className="qbank-choice-correct" title="정답">
@@ -200,7 +235,11 @@ function QuestionModal({ paperId, question, onClose, onSaved }) {
                         </div>
                         {c.imageUrl && (
                           <div style={{ paddingLeft: 26, marginTop: 4 }}>
-                            <img src={c.imageUrl} className="qbank-img-preview" alt="보기 이미지" />
+                            <span className="qbank-img-filename" onClick={() => setPreviewImg({ src: c.imageUrl, name: c.imageFileName })}>
+                              {c.imageFileName || '이미지 보기'}
+                            </span>
+                            <button type="button" className="qbank-choice-del" title="이미지 제거" style={{ marginLeft: 6 }}
+                              onClick={() => setChoices(prev => prev.map(x => x._key === c._key ? { ...x, imageUrl: '', imageFileName: '' } : x))}>✕</button>
                           </div>
                         )}
                       </div>
@@ -220,6 +259,8 @@ function QuestionModal({ paperId, question, onClose, onSaved }) {
         </div>
       </div>
     </div>
+    {previewImg && <ImagePreviewModal src={previewImg.src} name={previewImg.name} onClose={() => setPreviewImg(null)} />}
+    </>
   )
 }
 
@@ -238,7 +279,8 @@ function QuestionEditor() {
       qbankApi.question.list(paperId),
     ]).then(([p, q]) => {
       setPaper(p)
-      setQuestions(Array.isArray(q) ? q : [])
+      const list = (Array.isArray(q) ? q : []).map(item => ({ ...item, qType: item.qType ?? item.qtype }))
+      setQuestions(list)
     }).catch(() => {}).finally(() => setLoading(false))
   }, [paperId])
 

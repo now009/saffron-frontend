@@ -6,6 +6,12 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 8000,
+    proxy: {
+      '/qbank-images': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+      },
+    },
     configureServer(server) {
       server.middlewares.use('/main', (req, res, next) => {
         req.url = '/main.html'

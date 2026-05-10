@@ -46,6 +46,14 @@ const qbankApi = {
     update: (id, data) => fetch(`${base}/api/qbank/admin/papers/${id}`, { method: 'PUT', headers: h(), body: JSON.stringify(data) }).then(r => r.json()),
     delete: (id)       => fetch(`${base}/api/qbank/admin/papers/${id}`, { method: 'DELETE', headers: h() }).then(r => r.json()),
   },
+  // ─── 관리자: 이미지 업로드 ───
+  image: {
+    upload: (formData) => fetch(`${base}/api/qbank/admin/images`, {
+      method: 'POST',
+      headers: serverConfig.token.authHeader(), // Content-Type 헤더 없음 — multipart boundary 자동 설정
+      body: formData,
+    }).then(r => r.json()),
+  },
   // ─── 관리자: 문항 ───
   question: {
     list:   (paperId)        => getJson(`${base}/api/qbank/admin/papers/${paperId}/questions`),
